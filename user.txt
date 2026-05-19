@@ -1,0 +1,3 @@
+CREATE USER user1 WITH PASSWORD '***';
+CREATE DATABASE signal_track_db OWNER user1;
+GRANT ALL PRIVILEGES ON DATABASE signal_track_db TO user1;

@@ -17,6 +17,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -63,10 +65,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isRefreshing = true)
+
+            //TODO: ЗАГЛУШКА, Запрос в API
+            kotlinx.coroutines.delay(2000)
+
+            _uiState.value = _uiState.value.copy(
+                isRefreshing = false,
+                lastUpdateTime = getCurrentFormattedTime()
+            )
+        }
+    }
+
     fun login(loginText: String, passwordText: String) {
         if (loginText.isNotBlank() && passwordText.isNotBlank()) {
             //TODO: API, JWT
             _uiState.value = _uiState.value.copy(isAuthorized = true)
+            val firstDevice = mockDevices.firstOrNull()?.unitId
+            if (firstDevice != null){
+                selectDevice(firstDevice)
+            }
         }
     }
 

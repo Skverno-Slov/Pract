@@ -50,6 +50,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -120,14 +121,14 @@ fun MainNavigationContainer(vm: AppViewModel) {
                     title = {},
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Бургер меню")
+                            Icon(Icons.Default.Menu, contentDescription = "", tint = MaterialTheme.colorScheme.onPrimary)
                         }
                     },
                     actions = {
                         Text(
                             text = stringResource(R.string.user_initials),
                             modifier = Modifier.padding(end = 16.dp),
-                            style = MaterialTheme.typography.bodyLarge
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -149,31 +150,39 @@ fun MainNavigationContainer(vm: AppViewModel) {
                     Text(
                         text = stringResource(R.string.footer_copyright),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
         ) { paddingValues ->
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) { page ->
-                when (page) {
-                    0 -> DashboardScreen(
-                        uiState = uiState,
-                        onPeriodSelected = { vm.selectPeriod(it) },
-                        onViewModeChanged = { vm.toggleViewMode(it) }
-                    )
-                    1 -> DeviceListScreen(
-                        uiState = uiState,
-                        onDeviceSelected = { deviceId ->
-                            vm.selectDevice(deviceId)
-                            scope.launch { pagerState.animateScrollToPage(0) }
-                        }
-                    )
+            PullToRefreshBox(
+                isRefreshing = uiState.isRefreshing,
+                onRefresh = { vm.refreshData() },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) { page ->
+                    when (page) {
+                        0 -> DashboardScreen(
+                            uiState = uiState,
+                            onPeriodSelected = { vm.selectPeriod(it) },
+                            onViewModeChanged = { vm.toggleViewMode(it) }
+                        )
+
+                        1 -> DeviceListScreen(
+                            uiState = uiState,
+                            onDeviceSelected = { deviceId ->
+                                vm.selectDevice(deviceId)
+                                scope.launch { pagerState.animateScrollToPage(0) }
+                            },
+                            onRefresh = { vm.refreshData() }
+                        )
+                    }
                 }
             }
         }
@@ -255,7 +264,7 @@ fun DashboardScreen(
                         contentColor = if (uiState.isGraphView) colorScheme.onPrimary else colorScheme.onSurface
                     )
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = "График")
+                    Icon(Icons.Default.Check, contentDescription = "Metric")
                 }
                 IconButton(
                     onClick = { onViewModeChanged(false) },
@@ -264,18 +273,19 @@ fun DashboardScreen(
                         contentColor = if (!uiState.isGraphView) colorScheme.onPrimary else colorScheme.onSurface
                     )
                 ) {
-                    Icon(Icons.Default.List, contentDescription = "Таблица")
+                    Icon(Icons.Default.List, contentDescription = "Table")
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceListScreen(
     uiState: MonitoringUiState,
-    onDeviceSelected: (String) -> Unit
+    onDeviceSelected: (String) -> Unit,
+    onRefresh: () -> Unit
 ) {
     val groupedDevices = remember(uiState.devices) {
         uiState.devices.groupBy { it.model }
@@ -318,12 +328,12 @@ fun DeviceListScreen(
                             text = model,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                         Icon(
                             imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                            contentDescription = if (isExpanded) "Скрыть" else "Развернуть",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            contentDescription = if (isExpanded) "Hide" else "Expand",
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }
@@ -355,12 +365,12 @@ fun DeviceListScreen(
                             if (isSelected) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
-                                    contentDescription = "Выбрано",
-                                    tint = MaterialTheme.colorScheme.primary
+                                    contentDescription = "Checked",
+                                    tint = colorScheme.onSurface
                                 )
                             }
                         }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.5f))
                     }
                 }
             }
