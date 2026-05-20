@@ -16,14 +16,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -33,6 +37,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -48,6 +53,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -68,7 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rtsr.signal.R
-import com.rtsr.signal.models.MonitoringUiState
+import com.rtsr.signal.models.MainUiState
 import com.rtsr.signal.models.PeriodType
 import com.rtsr.signal.viewmodel.AppViewModel
 import kotlinx.coroutines.launch
@@ -155,33 +161,49 @@ fun MainNavigationContainer(vm: AppViewModel) {
                 }
             }
         ) { paddingValues ->
-
-            PullToRefreshBox(
-                isRefreshing = uiState.isRefreshing,
-                onRefresh = { vm.refreshData() },
-                modifier = Modifier.fillMaxSize()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
             ) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) { page ->
-                    when (page) {
-                        0 -> DashboardScreen(
-                            uiState = uiState,
-                            onPeriodSelected = { vm.selectPeriod(it) },
-                            onViewModeChanged = { vm.toggleViewMode(it) }
-                        )
+                when {
+                    uiState.isLoading -> {
+                        LoadingStateScreen()
+                    }
 
-                        1 -> DeviceListScreen(
-                            uiState = uiState,
-                            onDeviceSelected = { deviceId ->
-                                vm.selectDevice(deviceId)
-                                scope.launch { pagerState.animateScrollToPage(0) }
-                            },
-                            onRefresh = { vm.refreshData() }
-                        )
+                    uiState.devices.isEmpty() -> {
+                        EmptyStateScreen({vm.loadInitialData()})
+                    }
+
+                    else -> {
+                        PullToRefreshBox(
+                            isRefreshing = uiState.isRefreshing,
+                            onRefresh = { vm.refreshData() },
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            ) { page ->
+                                when (page) {
+                                    0 -> DashboardScreen(
+                                        uiState = uiState,
+                                        onPeriodSelected = { vm.selectPeriod(it) },
+                                        onViewModeChanged = { vm.toggleViewMode(it) }
+                                    )
+
+                                    1 -> DeviceListScreen(
+                                        uiState = uiState,
+                                        onDeviceSelected = { deviceId ->
+                                            vm.selectDevice(deviceId)
+                                            scope.launch { pagerState.animateScrollToPage(0) }
+                                        },
+                                        onRefresh = { vm.refreshData() }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -191,15 +213,18 @@ fun MainNavigationContainer(vm: AppViewModel) {
 
 @Composable
 fun DashboardScreen(
-    uiState: MonitoringUiState,
+    uiState: MainUiState,
     onPeriodSelected: (PeriodType) -> Unit,
     onViewModeChanged: (Boolean) -> Unit
 ) {
     val currentDevice = uiState.devices.find { it.unitId == uiState.selectedDeviceId }
 
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(16.dp)
     ) {
         Text(
@@ -283,7 +308,7 @@ fun DashboardScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun DeviceListScreen(
-    uiState: MonitoringUiState,
+    uiState: MainUiState,
     onDeviceSelected: (String) -> Unit,
     onRefresh: () -> Unit
 ) {
@@ -374,6 +399,64 @@ fun DeviceListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun LoadingStateScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.state_loading),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun EmptyStateScreen(onRefresh: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.Clear,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = stringResource(R.string.state_empty_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.state_empty_subtitle),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+            textAlign = TextAlign.Center
+        )
+        TextButton(
+            onClick = { onRefresh() }
+        ) {
+            Text(
+                text = stringResource(R.string.state_empty_refresh),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary // Цвет #7A00FF из вашей темы
+            )
         }
     }
 }

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.update
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.rtsr.signal.models.MonitoringUiState
+import com.rtsr.signal.models.MainUiState
 import com.rtsr.signal.models.PeriodType
 import com.rtsr.signal.models.Statuses
 import com.rtsr.signal.models.UnitValues
@@ -18,13 +18,14 @@ import java.time.format.DateTimeFormatter
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val sharedPrefs = application.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-    private val _uiState = MutableStateFlow(MonitoringUiState())
-    val uiState: StateFlow<MonitoringUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(MainUiState())
+    val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
     //TODO: Заменить эту затычку
     private val mockDevices = listOf(
@@ -43,12 +44,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     )
 
     init {
-        val savedId = sharedPrefs.getString("selected_device_id", mockDevices.firstOrNull()?.unitId)
 
-        _uiState.update {
-            it.copy(
+    }
+
+    fun loadInitialData() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            //TODO: метод для загрузуи данных из API привязать к состоянию авторизации пользователя
+            delay(2000)
+
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
                 devices = mockDevices,
-                selectedDeviceId = savedId,
                 lastUpdateTime = getCurrentFormattedTime()
             )
         }
@@ -81,13 +89,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun login(loginText: String, passwordText: String) {
         if (loginText.isNotBlank() && passwordText.isNotBlank()) {
-            //TODO: API, JWT
+            //TODO: API, JWT в отдельном методе
             _uiState.value = _uiState.value.copy(isAuthorized = true)
-            val firstDevice = mockDevices.firstOrNull()?.unitId
-            if (firstDevice != null){
-                selectDevice(firstDevice)
+            val savedId = sharedPrefs.getString("selected_device_id", mockDevices.firstOrNull()?.unitId)
+            if (savedId != null){
+                selectDevice(savedId)
             }
         }
+        //TODO:удалить тестовый вызов
+        loadInitialData()
     }
 
     fun logout() {

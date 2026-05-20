@@ -26,4 +26,9 @@
     <string name="password_hint">Пароль</string>
     <string name="btn_login">Войти</string>
     <string name="error_empty_fields">Заполните все поля</string>
+
+    <string name="state_loading">Загрузка данных...</string>
+    <string name="state_empty_title">Ничего не найдено</string>
+    <string name="state_empty_subtitle">Возможно вы не подкючены к сети.</string>
+    <string name="state_empty_refresh">Повторить.</string>
 </resources>
