@@ -27,8 +27,16 @@
     <string name="btn_login">Войти</string>
     <string name="error_empty_fields">Заполните все поля</string>
 
-    <string name="state_loading">Загрузка данных...</string>
     <string name="state_empty_title">Ничего не найдено</string>
     <string name="state_empty_subtitle">Возможно вы не подкючены к сети.</string>
     <string name="state_empty_refresh">Повторить.</string>
+
+    <string name="settings_title">Настройки подключения</string>
+    <string name="api_address_hint">Адрес сервера</string>
+    <string name="port_hint">Порт</string>
+    <string name="btn_save">Сохранить</string>
+    <string name="btn_check_connection">Проверить</string>
+    <string name="settings_saved">Настройки сохранены</string>
+    <string name="error_invalid_address">Некорректный адрес сервера</string>
+    <string name="error_invalid_port">Некорректный порт</string>
 </resources>

@@ -74,6 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rtsr.signal.R
+import com.rtsr.signal.models.AppScreen
 import com.rtsr.signal.models.MainUiState
 import com.rtsr.signal.models.PeriodType
 import com.rtsr.signal.viewmodel.AppViewModel
@@ -97,14 +98,20 @@ fun MainNavigationContainer(vm: AppViewModel) {
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     label = { Text(stringResource(R.string.menu_monitoring)) },
-                    selected = true,
-                    onClick = { scope.launch { drawerState.close() } }
+                    selected = uiState.currentScreen == AppScreen.MONITORING,
+                    onClick = {
+                        vm.navigateTo(AppScreen.MONITORING)
+                        scope.launch { drawerState.close() }
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = null) },
                     label = { Text(stringResource(R.string.menu_settings)) },
-                    selected = false,
-                    onClick = { /* TODO:заглушка */ }
+                    selected = uiState.currentScreen == AppScreen.SETTINGS,
+                    onClick = {
+                        vm.navigateTo(AppScreen.SETTINGS)
+                        scope.launch { drawerState.close() }
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Info, contentDescription = null) },
@@ -166,41 +173,59 @@ fun MainNavigationContainer(vm: AppViewModel) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                when {
-                    uiState.isLoading -> {
-                        LoadingStateScreen()
+                when (uiState.currentScreen) {
+                    AppScreen.SETTINGS -> {
+                        SettingsScreen(
+                            uiState = uiState,
+                            onSaveClick = {
+                                address, port -> vm.saveSettings(address, port)
+                            },
+                            onAddressValueChange = {
+                                vm.clearAddressError()
+                            },
+                            onPortValueChange = {
+                                vm.clearPortError()
+                            }
+                        )
                     }
+                    AppScreen.MONITORING -> {
+                        when {
+                            uiState.isLoading -> {
+                                LoadingStateScreen()
+                            }
 
-                    uiState.devices.isEmpty() -> {
-                        EmptyStateScreen({vm.loadInitialData()})
-                    }
+                            uiState.devices.isEmpty() -> {
+                                EmptyStateScreen({ vm.loadInitialData() })
+                            }
 
-                    else -> {
-                        PullToRefreshBox(
-                            isRefreshing = uiState.isRefreshing,
-                            onRefresh = { vm.refreshData() },
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            HorizontalPager(
-                                state = pagerState,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            ) { page ->
-                                when (page) {
-                                    0 -> DashboardScreen(
-                                        uiState = uiState,
-                                        onPeriodSelected = { vm.selectPeriod(it) },
-                                        onViewModeChanged = { vm.toggleViewMode(it) }
-                                    )
+                            else -> {
+                                PullToRefreshBox(
+                                    isRefreshing = uiState.isRefreshing,
+                                    onRefresh = { vm.refreshData() },
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    HorizontalPager(
+                                        state = pagerState,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                    ) { page ->
+                                        when (page) {
+                                            0 -> DashboardScreen(
+                                                uiState = uiState,
+                                                onPeriodSelected = { vm.selectPeriod(it) },
+                                                onViewModeChanged = { vm.toggleViewMode(it) }
+                                            )
 
-                                    1 -> DeviceListScreen(
-                                        uiState = uiState,
-                                        onDeviceSelected = { deviceId ->
-                                            vm.selectDevice(deviceId)
-                                            scope.launch { pagerState.animateScrollToPage(0) }
-                                        },
-                                        onRefresh = { vm.refreshData() }
-                                    )
+                                            1 -> DeviceListScreen(
+                                                uiState = uiState,
+                                                onDeviceSelected = { deviceId ->
+                                                    vm.selectDevice(deviceId)
+                                                    scope.launch { pagerState.animateScrollToPage(0) }
+                                                },
+                                                onRefresh = { vm.refreshData() }
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -411,12 +436,6 @@ fun LoadingStateScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = stringResource(R.string.state_loading),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
     }
 }
 
