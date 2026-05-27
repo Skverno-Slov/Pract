@@ -25,6 +25,13 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
         return Ok(result);
     }
 
+    [HttpGet("{serialNumber}/graph")]
+    public async Task<IActionResult> GetGraphData([FromRoute] string serialNumber, [FromQuery] string period = "ALL_TIME")
+    {
+        var points = await equipmentService.GetFullGraphDataAsync(serialNumber, period);
+        return Ok(points);
+    }
+
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetDevices()

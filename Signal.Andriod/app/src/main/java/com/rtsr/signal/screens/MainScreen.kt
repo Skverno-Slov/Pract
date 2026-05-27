@@ -108,10 +108,22 @@ import java.time.format.DateTimeFormatter
 import kotlin.collections.map
 import kotlin.math.abs
 import kotlin.math.ceil
-import kotlin.time.ExperimentalTime
-import kotlin.time.Instant
-import kotlin.time.toJavaInstant
-import android.graphics.Color as AndroidColor
+
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.common.component.LineComponent
+import com.rtsr.signal.dtos.GraphPointDto
+import kotlin.math.abs
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -280,7 +292,7 @@ fun DashboardScreen(
     onPeriodSelected: (PeriodType) -> Unit,
     onViewModeChanged: (Boolean) -> Unit,
     onParamSelected: (String?) -> Unit,
-    onPageSelected: (Int) -> Unit // Новый колбэк переключения страниц
+    onPageSelected: (Int) -> Unit
 ) {
     val currentDevice = uiState.devices.find { it.serialNumber == uiState.selectedDeviceId }
     val colorScheme = MaterialTheme.colorScheme
@@ -290,7 +302,6 @@ fun DashboardScreen(
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        // Шапка и фильтры параметров
         item {
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = stringResource(R.string.data_actual_at, uiState.lastUpdateTime), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
@@ -298,7 +309,6 @@ fun DashboardScreen(
             Text(text = currentDevice?.name ?: "—", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(text = "Фильтр параметра:", style = MaterialTheme.typography.labelMedium, color = Color.Gray)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 item { FilterChip(selected = uiState.selectedParamIdentifier == null, onClick = { onParamSelected(null) }, label = { Text("Все") }) }
                 items(uiState.availableParams) { paramId ->
@@ -307,23 +317,26 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        // Логика переключения График / Таблица
         if (uiState.isGraphView) {
             item {
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(250.dp).background(colorScheme.secondaryContainer.copy(alpha = 0.4f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Компонент будущих графиков параметров", style = MaterialTheme.typography.titleMedium)
+                if (uiState.isGraphLoading) {
+                    Box(modifier = Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    InteractiveParamChart(
+                        graphPoints = uiState.graphPoints,
+                        selectedParam = uiState.selectedParamIdentifier,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         } else {
-            // --- Тонкий аккуратный индикатор загрузки над таблицей ---
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(4.dp) // Фиксированная высота, чтобы контент не прыгал
+                        .height(4.dp)
                 ) {
                     if (uiState.isPageLoading) {
                         LinearProgressIndicator(
@@ -335,7 +348,6 @@ fun DashboardScreen(
                 }
             }
 
-            // Шапка таблицы
             item {
                 Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(text = "Показание", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
@@ -345,14 +357,11 @@ fun DashboardScreen(
                 HorizontalDivider(color = colorScheme.outlineVariant)
             }
 
-            // Вывод строк таблицы с мягким эффектом затухания (диммирования) во время загрузки
-            // Используем Modifier.graphicsLayer для плавной смены прозрачности без рекомпозиции
             items(uiState.logsList) { log ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .graphicsLayer {
-                            // Если страница грузится, плавно приглушаем цвета до 50% прозрачности
                             alpha = if (uiState.isPageLoading) 0.5f else 1f
                         }
                         .padding(vertical = 10.dp),
@@ -365,14 +374,12 @@ fun DashboardScreen(
                 HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.3f))
             }
 
-            // Блок ПАГИНАТОРА (Кнопки блокируются во время загрузки страницы)
             if (uiState.logsList.isNotEmpty()) {
                 item {
                     PaginationControl(
                         currentPage = uiState.currentPage,
                         totalCount = uiState.totalCount,
                         pageSize = 8,
-                        // Запрещаем клики, если страница уже находится в процессе загрузки
                         onPageChanged = { newPage ->
                             if (!uiState.isPageLoading) onPageSelected(newPage)
                         }
@@ -381,7 +388,6 @@ fun DashboardScreen(
             }
         }
 
-        // Большой спиннер показываем ТОЛЬКО при первой полной загрузке всего экрана (например, при смене прибора)
         if (uiState.isLoading && uiState.logsList.isEmpty()) {
             item {
                 Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -390,9 +396,8 @@ fun DashboardScreen(
             }
         }
 
-        // Нижние переключатели периодов
         item {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 var expanded by remember { mutableStateOf(false) }
                 Box {
@@ -406,7 +411,6 @@ fun DashboardScreen(
                         }
                     }
                 }
-                // Переключатели режимов
                 Row {
                     IconButton(onClick = { onViewModeChanged(true) }, colors = IconButtonDefaults.iconButtonColors(containerColor = if (uiState.isGraphView) colorScheme.primary else Color.Transparent, contentColor = if (uiState.isGraphView) colorScheme.onPrimary else colorScheme.onSurface)) { Icon(Icons.Default.Check, contentDescription = "Metric") }
                     IconButton(onClick = { onViewModeChanged(false) }, colors = IconButtonDefaults.iconButtonColors(containerColor = if (!uiState.isGraphView) colorScheme.primary else Color.Transparent, contentColor = if (!uiState.isGraphView) colorScheme.onPrimary else colorScheme.onSurface)) { Icon(Icons.Default.List, contentDescription = "Table") }
@@ -415,6 +419,192 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
+}
+
+@Composable
+fun InteractiveParamChart(
+    graphPoints: List<GraphPointDto>,
+    selectedParam: String?,
+    modifier: Modifier = Modifier
+) {
+    val filteredPoints = remember(graphPoints, selectedParam) {
+        if (selectedParam == null) graphPoints else graphPoints.filter { it.param == selectedParam }
+    }
+
+    if (filteredPoints.isEmpty()) {
+        Box(modifier = modifier.height(300.dp), contentAlignment = Alignment.Center) {
+            Text("Нет данных для графика", color = Color.Gray)
+        }
+        return
+    }
+
+    val validNumericPoints = remember(filteredPoints) {
+        filteredPoints.filter { point ->
+            val cleanValue = point.`value`.replace(",", ".")
+            val floatVal = cleanValue.toFloatOrNull()
+            floatVal != null && !floatVal.isNaN() && !floatVal.isInfinite()
+        }
+    }
+
+    val optimizedPoints = remember(validNumericPoints) {
+        val maxPoints = 500
+        if (validNumericPoints.size > maxPoints) {
+            val step = validNumericPoints.size / maxPoints
+            validNumericPoints.filterIndexed { index, _ -> index % step == 0 }
+        } else {
+            validNumericPoints
+        }
+    }
+
+    val groupedPoints = remember(optimizedPoints) { optimizedPoints.groupBy { it.param } }
+
+    val paramBounds = remember(optimizedPoints) {
+        groupedPoints.mapValues { (_, points) ->
+            val values = points.map { it.`value`.replace(",", ".").toFloatOrNull() ?: 0f }
+            val min = values.minOrNull() ?: 0f
+            val max = values.maxOrNull() ?: 100f
+            val delta = if (max == min || (max - min) == 0f) 1f else max - min
+            (min - delta * 0.1f) to (max + delta * 0.1f)
+        }
+    }
+
+    val globalMinMax = remember(paramBounds) {
+        val mins = paramBounds.values.map { it.first }
+        val maxs = paramBounds.values.map { it.second }
+        (mins.minOrNull() ?: 0f) to (maxs.maxOrNull() ?: 100f)
+    }
+
+    var scaleX by remember { mutableStateOf(1f) }
+    var offsetX by remember { mutableStateOf(0f) }
+
+    val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
+        scaleX = (scaleX * zoomChange).coerceIn(1f, 30f)
+        offsetX += offsetChange.x
+    }
+
+    val colorScheme = MaterialTheme.colorScheme
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .background(colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                .transformable(state = transformState)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize().padding(start = 50.dp, bottom = 30.dp, top = 10.dp, end = 10.dp)) {
+                val width = size.width
+                val height = size.height
+
+                val maxOffset = 0f
+                val minOffset = -(width * scaleX - width)
+                offsetX = offsetX.coerceIn(minOffset, maxOffset)
+
+                for (i in 0..4) {
+                    val yCoeff = i.toFloat() / 4f
+                    val yPos = height - (yCoeff * height)
+                    drawLine(
+                        color = Color.LightGray.copy(alpha = 0.4f),
+                        start = Offset(0f, yPos),
+                        end = Offset(width, yPos),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+
+                groupedPoints.forEach { (paramName, points) ->
+                    if (points.size < 2) return@forEach
+
+                    val path = Path()
+                    val xSpacing = width / (points.size - 1)
+                    var isFirst = true
+
+                    val bounds = paramBounds[paramName] ?: (0f to 100f)
+                    val pMin = bounds.first
+                    val pMax = bounds.second
+                    val pRange = if ((pMax - pMin) == 0f) 1f else (pMax - pMin)
+
+                    points.forEachIndexed { index, point ->
+                        val cleanValue = point.`value`.replace(",", ".")
+                        val yVal = cleanValue.toFloatOrNull() ?: return@forEachIndexed
+
+                        val xPos = (index * xSpacing * scaleX) + offsetX
+                        val yPos = height - (((yVal - pMin) / pRange) * height)
+
+                        if (!xPos.isNaN() && !xPos.isInfinite() && !yPos.isNaN() && !yPos.isInfinite()) {
+                            if (isFirst) {
+                                path.moveTo(xPos, yPos)
+                                isFirst = false
+                            } else {
+                                path.lineTo(xPos, yPos)
+                            }
+                        }
+                    }
+
+                    if (!isFirst) {
+                        drawPath(
+                            path = path,
+                            color = getParamColor(paramName),
+                            style = Stroke(width = 2.dp.toPx())
+                        )
+                    }
+                }
+            }
+
+            Column(
+                modifier = Modifier.fillMaxHeight().padding(bottom = 30.dp, top = 10.dp, start = 6.dp),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                val bounds = if (selectedParam != null) paramBounds[selectedParam] ?: (0f to 100f) else globalMinMax
+                val yMin = bounds.first
+                val yMax = bounds.second
+                val step = (yMax - yMin) / 4f
+
+                for (i in 4 downTo 0) {
+                    val value = yMin + (step * i)
+                    val textToShow = if (value.isNaN() || value.isInfinite()) "0.0" else String.format(java.util.Locale.US, "%.1f", value)
+                    Text(
+                        text = textToShow,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomStart)
+                    .padding(start = 50.dp, bottom = 4.dp, end = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (optimizedPoints.size >= 3) {
+                    val firstTime = optimizedPoints.first().dt.substringAfter("T").take(5)
+                    val midTime = optimizedPoints[optimizedPoints.size / 2].dt.substringAfter("T").take(5)
+                    val lastTime = optimizedPoints.last().dt.substringAfter("T").take(5)
+
+                    Text(text = firstTime, fontSize = 10.sp, color = Color.Gray)
+                    Text(text = midTime, fontSize = 10.sp, color = Color.Gray)
+                    Text(text = lastTime, fontSize = 10.sp, color = Color.Gray)
+                }
+            }
+        }
+    }
+}
+
+fun getParamColor(paramIdentifier: String?): Color {
+    if (paramIdentifier.isNullOrBlank()) return Color.Gray
+    val colors = listOf(
+        Color(0xFF007AFF),
+        Color(0xFF34C759),
+        Color(0xFFFF9500),
+        Color(0xFFFF2D55),
+        Color(0xFF5856D6),
+        Color(0xFFAF52DE)
+    )
+    val positiveHashCode = paramIdentifier.hashCode() and 0x7FFFFFFF
+    val index = positiveHashCode % colors.size
+    return colors[index]
 }
 
 @Composable

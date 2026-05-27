@@ -4,6 +4,7 @@ import android.app.Application
 import kotlinx.coroutines.flow.update
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
@@ -126,6 +127,27 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun loadGraphData() {
+        val deviceId = _uiState.value.selectedDeviceId ?: return
+        val period = _uiState.value.selectedPeriod.name
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isGraphLoading = true) }
+            try {
+                val points = api.getFullGraphData(deviceId, period)
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isGraphLoading = false,
+                        graphPoints = points
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", e.message.toString())
+                _uiState.update { it.copy(isGraphLoading = false) }
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun selectDevice(id: String) {
         sharedPrefs.edit {
@@ -147,6 +169,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.value = _uiState.value.copy(isRefreshing = true)
 
             loadAllData()
+            loadGraphData()
 
             _uiState.value = _uiState.value.copy(
                 isRefreshing = false
@@ -377,6 +400,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleViewMode(isGraph: Boolean) {
         _uiState.update { it.copy(isGraphView = isGraph) }
+        if (isGraph) {
+            loadGraphData()
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

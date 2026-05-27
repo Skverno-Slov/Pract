@@ -1,6 +1,7 @@
 package com.rtsr.signal.models
 
 import com.rtsr.signal.dtos.EquipmentDto
+import com.rtsr.signal.dtos.GraphPointDto
 import com.rtsr.signal.dtos.ReadingLogDto
 
 data class MainUiState(
@@ -28,5 +29,7 @@ data class MainUiState(
     val selectedParamIdentifier: String? = null,
     val currentPage: Int = 1,
     val isPageLoading: Boolean = false,
-    val totalCount: Int = 0
+    val totalCount: Int = 0,
+    val graphPoints: List<GraphPointDto> = emptyList(),
+    val isGraphLoading: Boolean = false
 )

@@ -71,6 +71,31 @@ namespace Signal.Server.Services
                 .ToListAsync();
         }
 
+        public async Task<List<GraphPointResponse>> GetFullGraphDataAsync(string serialNumber, string periodType)
+        {
+            var now = DateTime.UtcNow;
+            DateTime? startDate = null;
+            DateTime? endDate = null;
+
+            ApplyPeriod(periodType, now, ref startDate, ref endDate);
+
+            var query = context.reading_logs
+                .AsNoTracking() 
+                .Where(rl => rl.equipment.serial_number == serialNumber);
+
+            if (startDate.HasValue) query = query.Where(rl => rl.write_date_time >= startDate.Value);
+            if (endDate.HasValue) query = query.Where(rl => rl.write_date_time < endDate.Value);
+
+            return await query
+                .OrderBy(rl => rl.write_date_time) 
+                .Select(rl => new GraphPointResponse(
+                    rl.reading_type.identifier,
+                    rl.value, 
+                    rl.write_date_time
+                ))
+                .ToListAsync();
+        }
+
         private static void ApplyPeriod(string periodType, DateTime now, ref DateTime? startDate, ref DateTime? endDate)
         {
             switch (periodType.ToUpper())

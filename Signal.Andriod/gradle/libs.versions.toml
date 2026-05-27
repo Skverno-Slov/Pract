@@ -15,8 +15,12 @@ okhttp = "5.3.2"
 retrofit = "3.0.0"
 roomKtx = "2.8.4"
 securityCrypto = "1.1.0"
+vico = "2.0.0"
 
 [libraries]
+vico_core = { group = "com.patrykandpatrick.vico", name = "core", version.ref = "vico" }
+vico_compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vico" }
+vico_compose_m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vico" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }

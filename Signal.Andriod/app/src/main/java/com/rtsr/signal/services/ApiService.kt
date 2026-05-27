@@ -1,6 +1,7 @@
 package com.rtsr.signal.services
 
 import com.rtsr.signal.dtos.EquipmentDto
+import com.rtsr.signal.dtos.GraphPointDto
 import com.rtsr.signal.dtos.LoginRequest
 import com.rtsr.signal.dtos.PagedLogsDto
 import com.rtsr.signal.dtos.PingResponse
@@ -52,6 +53,12 @@ interface ApiService {
 
     @GET
     suspend fun checkApiHealth(@Url url: String): PingResponse
+
+    @GET("api/equipment/{serialNumber}/graph")
+    suspend fun getFullGraphData(
+        @Path("serialNumber") serialNumber: String,
+        @Query("period") period: String
+    ): List<GraphPointDto>
 }
 
 object NetworkClient {

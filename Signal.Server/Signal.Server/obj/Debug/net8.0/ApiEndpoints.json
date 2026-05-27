@@ -80,6 +80,27 @@
   },
   {
     "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "GetGraphData",
+    "RelativePath": "api/equipment/{serialNumber}/graph",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "serialNumber",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "period",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
     "Method": "GetEquipmentLogs",
     "RelativePath": "api/equipment/{serialNumber}/logs",
     "HttpMethod": "GET",
