@@ -1,4 +1,5 @@
 package com.rtsr.signal.dtos
 
-class RefreshRequest {
-}
+data class RefreshRequest(
+    val refreshToken: String
+)

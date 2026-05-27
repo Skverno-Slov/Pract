@@ -6,11 +6,9 @@ import android.content.Context
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.ui.graphics.Color
 import com.rtsr.signal.models.MainUiState
 import com.rtsr.signal.models.PeriodType
-import com.rtsr.signal.models.Statuses
-import com.rtsr.signal.models.UnitValues
-import com.rtsr.signal.models.WebUnit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,9 +19,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.rtsr.signal.R
+import com.rtsr.signal.dtos.LoginRequest
+import com.rtsr.signal.dtos.RefreshRequest
 import com.rtsr.signal.models.AppScreen
-import kotlinx.coroutines.delay
+import com.rtsr.signal.models.ConnectionStatus
+import com.rtsr.signal.models.SignalApplication
+import com.rtsr.signal.services.NetworkClient
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @RequiresApi(Build.VERSION_CODES.O)
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -31,80 +34,182 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-    //TODO: Заменить эту затычку
-    private val mockDevices = listOf(
-        WebUnit("1a0b9cf", "Мегафон НЗ(1)", "МФ-2000", "2026-05-16 15:30:11", listOf(
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK),
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK),
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK)), Statuses.OK),
-        WebUnit("1a0b9ab", "Мегафон НЗ(2)", "МФ-2000(1)", "2026-05-16 15:30:11", listOf(
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK),
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK),
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK)), Statuses.WARN),
-        WebUnit("1a0b9gh", "Мегафон НЗ(3)", "МФ-2000", "2026-05-16 15:30:11", listOf(
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK),
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK),
-            UnitValues("ebno", "Eb/N0", 9.5, "дБ", Statuses.OK)), Statuses.OK)
-    )
+    val savedAddress = sharedPrefs.getString("api_address", "192.168.59.18") ?: "192.168.59.18"
+    val savedPort = sharedPrefs.getString("api_port", "22") ?: "22"
+
+    val api get() = NetworkClient.getApi()
+
+    val tokenManager = SignalApplication.tokenManager
 
     init {
+        loadConnectionSettings(savedAddress, savedPort)
 
+        tryAutoLogin()
     }
 
-    fun loadInitialData() {
+    fun updateClient(){
+        NetworkClient.init(_uiState.value, tokenManager)
+    }
+
+    fun loadDeviceData() {
+        val deviceId = _uiState.value.selectedDeviceId ?: return
+        val period = _uiState.value.selectedPeriod.name
+        val param = _uiState.value.selectedParamIdentifier
+        val page = _uiState.value.currentPage
+        val pageSize = 8
+
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
 
-            //TODO: метод для загрузуи данных из API привязать к состоянию авторизации пользователя
-            delay(2000)
+            try {
+                val response = api.getEquipmentLogs(deviceId, period, param, page, pageSize)
 
-            _uiState.value = _uiState.value.copy(
-                isLoading = false,
-                devices = mockDevices,
-                lastUpdateTime = getCurrentFormattedTime()
-            )
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        isPageLoading = false,
+                        logsList = response.logs,
+                        availableParams = response.availableIdentifiers,
+                        totalCount = response.totalCount
+                    )
+                }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isLoading = false, isPageLoading = false) }
+            }
+        }
+    }
+
+    fun loadAllData() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val remoteDevices = api.getEquipmentList()
+                val firstDeviceId = remoteDevices.firstOrNull()?.serialNumber
+                val currentSelectedId = _uiState.value.selectedDeviceId
+                    ?: sharedPrefs.getString("selected_device_id", firstDeviceId)
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        devices = remoteDevices,
+                        selectedDeviceId = currentSelectedId,
+                        currentPage = 1
+                    )
+                }
+
+                if (currentSelectedId != null) {
+                    try {
+                        val response = api.getEquipmentLogs(
+                            currentSelectedId,
+                            _uiState.value.selectedPeriod.name,
+                            _uiState.value.selectedParamIdentifier,
+                            1,
+                            8
+                        )
+
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                isLoading = false,
+                                logsList = response.logs,
+                                availableParams = response.availableIdentifiers,
+                                totalCount = response.totalCount,
+                                lastUpdateTime = getCurrentFormattedTime()
+                            )
+                        }
+                    } catch (_: Exception) {
+                        _uiState.update { it.copy(isLoading = false, logsList = emptyList(), totalCount = 0) }
+                    }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, logsList = emptyList(), totalCount = 0) }
+                }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isLoading = false) }
+            }
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun selectDevice(id: String) {
-        sharedPrefs.edit { putString("selected_device_id", id) }
-        _uiState.update {
-            it.copy(
+        sharedPrefs.edit {
+            putString("selected_device_id", id)
+        }
+
+        _uiState.update { currentState ->
+            currentState.copy(
                 selectedDeviceId = id,
-                lastUpdateTime = getCurrentFormattedTime()
+                currentPage = 1
             )
         }
+
+        loadDeviceData()
     }
 
     fun refreshData() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isRefreshing = true)
 
-            //TODO: ЗАГЛУШКА, Запрос в API
-            kotlinx.coroutines.delay(2000)
+            loadAllData()
 
             _uiState.value = _uiState.value.copy(
-                isRefreshing = false,
-                lastUpdateTime = getCurrentFormattedTime()
+                isRefreshing = false
             )
         }
     }
 
-    fun login(loginText: String, passwordText: String) {
-        if (loginText.isNotBlank() && passwordText.isNotBlank()) {
-            //TODO: API, JWT в отдельном методе
-            _uiState.value = _uiState.value.copy(isAuthorized = true)
-            val savedId = sharedPrefs.getString("selected_device_id", mockDevices.firstOrNull()?.unitId)
-            val savedAddress = sharedPrefs.getString("api_address", "192.168.59.18") ?: "192.168.59.18"
-            val savedPort = sharedPrefs.getString("api_port", "22") ?: "22"
-            if (savedId != null){
-                selectDevice(savedId)
-            }
-            loadConnectionSettings(savedAddress, savedPort)
+    private fun tryAutoLogin() {
+        val refreshToken = tokenManager.getRefreshToken()
+        if (refreshToken.isNullOrBlank()) {
+            _uiState.update { it.copy(isAutoLoginChecking = false, isAuthorized = false) }
+            return
         }
-        //TODO:удалить тестовый вызов
-        loadInitialData()
+
+        viewModelScope.launch {
+            try {
+                val response = api.refreshTokensAsync(RefreshRequest(refreshToken))
+                tokenManager.saveTokens(response.accessToken, response.refreshToken)
+                val fullName = listOfNotNull(response.lastName, response.firstName, response.middleName)
+                    .joinToString(" ")
+                    .ifBlank { " " }
+
+                _uiState.update { it.copy(isAuthorized = true, userFullName = fullName) }
+                loadAllData()
+            } catch (e: retrofit2.HttpException) {
+                tokenManager.clearTokens()
+                _uiState.update { it.copy(isAuthorized = false) }
+            } catch (e: java.io.IOException) {
+                _uiState.update { it.copy(isAuthorized = false) }
+            } finally {
+                _uiState.update { it.copy(isAutoLoginChecking = false) }
+            }
+        }
+    }
+
+    suspend fun login(loginText: String, passwordText: String) {
+        _uiState.update { it.copy(loginErrorMessage = null,isLoginLoading = true) }
+
+        if (loginText.isNotBlank() && passwordText.isNotBlank()) {
+            try {
+                val response = api.login(LoginRequest(loginText, passwordText), getDeviceName())
+                tokenManager.saveTokens(response.accessToken, response.refreshToken)
+
+                val fullName = listOfNotNull(response.lastName, response.firstName, response.middleName)
+                    .joinToString(" ")
+                    .ifBlank { " " }
+
+                _uiState.update { it.copy(
+                    isAuthorized = true,
+                    userFullName = fullName,
+                    currentScreen = AppScreen.MONITORING
+                ) }
+                loadAllData()
+            } catch (_: retrofit2.HttpException) {
+                _uiState.update { it.copy(loginErrorMessage = R.string.error_login_failed) }
+            } catch (_: java.io.IOException) {
+                _uiState.update { it.copy(loginErrorMessage = R.string.error_api_no_response) }
+            } finally {
+                _uiState.update { it.copy(isLoginLoading = false) }
+            }
+        } else {
+            _uiState.update { it.copy(loginErrorMessage = R.string.error_empty_fields, isLoginLoading = false) }
+        }
     }
 
     fun loadConnectionSettings(address: String, port: String){
@@ -112,21 +217,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             apiAddress = address,
             apiPort = port
         )
+        updateClient()
     }
 
     fun saveSettings(address: String, port: String) {
-        val ipWithDomainRegex = Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$|^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}\$")
-        val isAddressValid = address.trim().matches(ipWithDomainRegex)
-        val portInt = port.trim().toIntOrNull()
-        val isPortValid = portInt != null && portInt in 1..65535
-
+        val isAddressValid = validateAddress(address)
+        val isPortValid = validatePort(port)
         if (!isAddressValid || !isPortValid) {
+
             _uiState.update { currentState ->
                 currentState.copy(
                     addressErrorResId = if (isAddressValid) null else R.string.error_invalid_address,
                     portErrorResId = if (isPortValid) null else R.string.error_invalid_port
                 )
             }
+
             return
         }
 
@@ -141,44 +246,133 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { currentState ->
             currentState.copy(
                 addressErrorResId = null,
-                portErrorResId = null,
-                currentScreen = AppScreen.MONITORING
+                portErrorResId = null
             )
         }
+
+        Toast.makeText(application, "Настройки сохранены", Toast.LENGTH_SHORT).show()
     }
 
-    fun clearAddressError() {
-        if (_uiState.value.addressErrorResId != null) {
-            _uiState.update { it.copy(addressErrorResId = null) }
+    fun onSettingsInputChanged(inputAddress: String, inputPort: String) {
+        _uiState.update { it.copy(
+            apiAddress = inputAddress,
+            apiPort = inputPort
+        ) }
+
+        if (inputAddress.trim() == savedAddress && inputPort.trim() == savedPort) {
+            _uiState.update { it.copy(connectionStatus = ConnectionStatus.SUCCESS) }
+        } else {
+            _uiState.update { it.copy(connectionStatus = ConnectionStatus.NOT_TESTED) }
         }
     }
 
-    fun clearPortError() {
-        if (_uiState.value.portErrorResId != null) {
-            _uiState.update { it.copy(portErrorResId = null) }
+    fun checkConnection(address: String, port: String) {
+        val isAddressValid = validateAddress(address)
+        val isPortValid = validatePort(port)
+
+        if (!isAddressValid || !isPortValid) {
+            _uiState.update { it.copy(
+                addressErrorResId = if (isAddressValid) null else R.string.error_invalid_address,
+                portErrorResId = if (isPortValid) null else R.string.error_invalid_port,
+                connectionStatus = ConnectionStatus.FAILED
+            ) }
+            return
         }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isConnectionChecking = true, apiAddress = address, apiPort = port) }
+            try {
+                val testUrl = "http://${address.trim()}:${port.trim()}/api/ping"
+
+                val response = api.checkApiHealth(testUrl)
+
+                if (response.service == "SignalTrack.Api") {
+                    _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.SUCCESS) }
+                } else {
+                    _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.FAILED) }
+                }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.FAILED) }
+            }
+        }
+    }
+
+    private fun validateAddress(address: String): Boolean{
+        val ipWithDomainRegex = Regex("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\$|^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,6}\$")
+        return address.trim().matches(ipWithDomainRegex)
+    }
+
+    private fun validatePort(port: String): Boolean{
+        val portInt = port.trim().toIntOrNull()
+        return portInt != null && portInt in 1..65535
     }
 
     fun navigateTo(screen: AppScreen) {
+        val isSettingsScreen = screen == AppScreen.SETTINGS
         _uiState.update { currentState ->
             currentState.copy(
                 currentScreen = screen,
-                addressErrorResId = if (screen == AppScreen.SETTINGS) null else currentState.addressErrorResId,
-                portErrorResId = if (screen == AppScreen.SETTINGS) null else currentState.portErrorResId
+                addressErrorResId = if (isSettingsScreen) null else currentState.addressErrorResId,
+                portErrorResId = if (isSettingsScreen) null else currentState.portErrorResId,
+                connectionStatus = if (isSettingsScreen &&
+                    currentState.apiAddress == savedAddress &&
+                    currentState.apiPort == savedPort) {
+                    ConnectionStatus.SUCCESS
+                } else {
+                    ConnectionStatus.NOT_TESTED
+                }
             )
         }
     }
 
     fun logout() {
-        sharedPrefs.edit { remove("selected_device_id") }
-        _uiState.value = _uiState.value.copy(
-            isAuthorized = false,
-            selectedDeviceId = null
-        )
+        val refreshToken = tokenManager.getRefreshToken()
+
+        viewModelScope.launch {
+            try {
+                if (!refreshToken.isNullOrBlank()) {
+                    NetworkClient.getApi().logoutServer(RefreshRequest(refreshToken))
+                }
+            } catch (_: Exception) {}
+            finally {
+                tokenManager.clearTokens()
+
+                sharedPrefs.edit(commit = true) {
+                    remove("selected_device_id")
+                }
+
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isAuthorized = false,
+                        selectedDeviceId = null,
+                        userFullName = " ",
+                        currentPage = 1
+                    )
+                }
+            }
+        }
     }
 
     fun selectPeriod(period: PeriodType) {
-        _uiState.update { it.copy(selectedPeriod = period) }
+        _uiState.update { it.copy(
+            selectedPeriod = period,
+            currentPage = 1)
+        }
+        loadDeviceData()
+    }
+
+    fun selectParamIdentifier(identifier: String?) {
+        _uiState.update {
+            it.copy(selectedParamIdentifier = identifier,
+                currentPage = 1)
+        }
+        loadDeviceData()
+    }
+
+    fun changePage(page: Int) {
+        if (page < 1 || _uiState.value.isPageLoading || _uiState.value.isLoading) return
+        _uiState.update { it.copy(currentPage = page, isPageLoading = true) }
+        loadDeviceData()
     }
 
     fun toggleViewMode(isGraph: Boolean) {
@@ -189,4 +383,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun getCurrentFormattedTime(): String {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"))
     }
+
+    fun getDeviceName(): String {
+        val manufacturer = Build.MANUFACTURER
+        val model = Build.MODEL
+        return if (model.startsWith(manufacturer)) {
+            model
+        } else {
+            "$manufacturer $model"
+        }
+    }
+
 }

@@ -1,3 +1,3 @@
 package com.rtsr.signal.dtos
 
-data class PingResponse()
+data class PingResponse(val service: String)

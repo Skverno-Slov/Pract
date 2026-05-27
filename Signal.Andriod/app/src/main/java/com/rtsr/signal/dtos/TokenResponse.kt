@@ -1,4 +1,9 @@
 package com.rtsr.signal.dtos
 
-class TokenResponse {
-}
+data class TokenResponse(
+    val accessToken: String,
+    val refreshToken: String,
+    val firstName: String?,
+    val lastName: String?,
+    val middleName: String?
+)

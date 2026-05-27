@@ -1,11 +1,16 @@
 package com.rtsr.signal.models
 
+import com.rtsr.signal.dtos.EquipmentDto
+import com.rtsr.signal.dtos.ReadingLogDto
+
 data class MainUiState(
     val isAuthorized: Boolean = false,
     val isLoading: Boolean = true,
+    val userFullName: String = "",
     val currentScreen: AppScreen = AppScreen.MONITORING,
+    val isAutoLoginChecking: Boolean = true,
     val isRefreshing: Boolean = false,
-    val devices: List<WebUnit> = emptyList(),
+    val devices: List<EquipmentDto> = emptyList(),
     val selectedDeviceId: String? = null,
     val selectedPeriod: PeriodType = PeriodType.ALL_TIME,
     val isGraphView: Boolean = true,
@@ -13,5 +18,15 @@ data class MainUiState(
     val apiAddress: String = "192.168.59.18",
     val apiPort: String = "22",
     val addressErrorResId: Int? = null,
-    val portErrorResId: Int? = null
+    val portErrorResId: Int? = null,
+    val loginErrorMessage: Int? = null,
+    val isLoginLoading: Boolean = false,
+    val logsList: List<ReadingLogDto> = emptyList(),
+    val isConnectionChecking: Boolean = false,
+    val connectionStatus: ConnectionStatus = ConnectionStatus.NOT_TESTED,
+    val availableParams: List<String> = emptyList(),
+    val selectedParamIdentifier: String? = null,
+    val currentPage: Int = 1,
+    val isPageLoading: Boolean = false,
+    val totalCount: Int = 0
 )

@@ -17,14 +17,24 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rtsr.signal.R
+import com.rtsr.signal.models.AppScreen
+import com.rtsr.signal.models.MainUiState
+import kotlinx.coroutines.launch
 
 
 @Composable
-fun AuthorizationScreen(onLoginClick: (String, String) -> Unit) {
+fun AuthorizationScreen(
+    uiState: MainUiState,
+    onLoginClick: suspend (String, String) -> Unit,
+    toSettingsClick: (AppScreen) -> Unit,
+    screen: AppScreen
+) {
     var login by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var isError by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    val isLoaderActive = uiState.isLoginLoading
 
     Column(
         modifier = Modifier
@@ -45,44 +55,43 @@ fun AuthorizationScreen(onLoginClick: (String, String) -> Unit) {
 
         OutlinedTextField(
             value = login,
-            onValueChange = {
-                login = it
-                if (isError) isError = false
-            },
+            onValueChange = { login = it },
             label = { Text(stringResource(R.string.login_hint)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            isError = isError
+            enabled = !isLoaderActive, // Блокировка
+            isError = uiState.loginErrorMessage != null
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
             value = password,
-            onValueChange = {
-                password = it
-                if (isError) isError = false
-            },
+            onValueChange = { password = it },
             label = { Text(stringResource(R.string.password_hint)) },
             trailingIcon = {
                 val image = if (passwordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible },
+                    enabled = !isLoaderActive
+                ) {
                     Icon(image, contentDescription = if (passwordVisible) "Скрыть" else "Показать")
                 }
             },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
+            enabled = !isLoaderActive,
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            isError = isError
+            isError = uiState.loginErrorMessage != null
         )
 
-        if (isError) {
+        uiState.loginErrorMessage?.let { resId ->
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = stringResource(R.string.error_empty_fields),
+                text = stringResource(resId),
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.align(Alignment.Start).padding(top = 4.dp, start = 8.dp)
+                style = MaterialTheme.typography.bodyMedium
             )
         }
 
@@ -90,19 +99,39 @@ fun AuthorizationScreen(onLoginClick: (String, String) -> Unit) {
 
         Button(
             onClick = {
-                if (login.isBlank() || password.isBlank()) {
-                    isError = true
-                } else {
-                    onLoginClick(login, password)
+                scope.launch {
+                    onLoginClick(login.trim(), password.trim())
                 }
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
+                .height(50.dp),
+            enabled = !isLoaderActive
+        ) {
+            if (isLoaderActive) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    strokeWidth = 2.5.dp
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.btn_login),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        TextButton(
+            onClick = { toSettingsClick(screen) },
+            enabled = !isLoaderActive
         ) {
             Text(
-                text = stringResource(R.string.btn_login),
-                style = MaterialTheme.typography.titleMedium,
+                text = stringResource(R.string.menu_settings),
+                style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
         }
