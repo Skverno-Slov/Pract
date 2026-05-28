@@ -4,8 +4,6 @@ import android.app.Application
 import kotlinx.coroutines.flow.update
 import android.content.Context
 import android.os.Build
-import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
 import com.rtsr.signal.models.MainUiState
@@ -17,7 +15,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.rtsr.signal.R
 import com.rtsr.signal.dtos.LoginRequest
@@ -27,7 +24,6 @@ import com.rtsr.signal.models.ConnectionStatus
 import com.rtsr.signal.models.SignalApplication
 import com.rtsr.signal.services.NetworkClient
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 @RequiresApi(Build.VERSION_CODES.O)
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -52,30 +48,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         NetworkClient.init(_uiState.value, tokenManager)
     }
 
-    fun loadDeviceData() {
-        val deviceId = _uiState.value.selectedDeviceId ?: return
-        val period = _uiState.value.selectedPeriod.name
-        val param = _uiState.value.selectedParamIdentifier
-        val page = _uiState.value.currentPage
-        val pageSize = 8
-
-        viewModelScope.launch {
-
-            try {
-                val response = api.getEquipmentLogs(deviceId, period, param, page, pageSize)
-
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isLoading = false,
-                        isPageLoading = false,
-                        logsList = response.logs,
-                        availableParams = response.availableIdentifiers,
-                        totalCount = response.totalCount
-                    )
-                }
-            } catch (_: Exception) {
-                _uiState.update { it.copy(isLoading = false, isPageLoading = false) }
-            }
+    fun loadDataForCurrentView() {
+        if (_uiState.value.isGraphView) {
+            loadGraphData()
+        } else {
+            loadDeviceData()
         }
     }
 
@@ -85,8 +62,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val remoteDevices = api.getEquipmentList()
                 val firstDeviceId = remoteDevices.firstOrNull()?.serialNumber
-                val currentSelectedId = _uiState.value.selectedDeviceId
-                    ?: sharedPrefs.getString("selected_device_id", firstDeviceId)
+                val currentSelectedId = _uiState.value.selectedDeviceId ?: sharedPrefs.getString("selected_device_id", firstDeviceId)
 
                 _uiState.update { currentState ->
                     currentState.copy(
@@ -98,31 +74,79 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
                 if (currentSelectedId != null) {
                     try {
-                        val response = api.getEquipmentLogs(
-                            currentSelectedId,
-                            _uiState.value.selectedPeriod.name,
-                            _uiState.value.selectedParamIdentifier,
-                            1,
-                            8
-                        )
+                        if (_uiState.value.isGraphView) {
+                            _uiState.update { it.copy(isGraphLoading = true) }
+                            val points = api.getFullGraphData(currentSelectedId, _uiState.value.selectedPeriod.name)
 
-                        _uiState.update { currentState ->
-                            currentState.copy(
-                                isLoading = false,
-                                logsList = response.logs,
-                                availableParams = response.availableIdentifiers,
-                                totalCount = response.totalCount,
-                                lastUpdateTime = getCurrentFormattedTime()
+                            val response = api.getEquipmentLogs(
+                                currentSelectedId,
+                                _uiState.value.selectedPeriod.name,
+                                _uiState.value.selectedParamIdentifier,
+                                1,
+                                8
                             )
+
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    isLoading = false,
+                                    isGraphLoading = false,
+                                    graphPoints = points,
+                                    availableParams = response.availableIdentifiers,
+                                    lastUpdateTime = getCurrentFormattedTime()
+                                )
+                            }
+                        } else {
+                            val response = api.getEquipmentLogs(
+                                currentSelectedId,
+                                _uiState.value.selectedPeriod.name,
+                                _uiState.value.selectedParamIdentifier,
+                                1,
+                                8
+                            )
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    isLoading = false,
+                                    logsList = response.logs,
+                                    availableParams = response.availableIdentifiers,
+                                    selectedParamIdentifier = null,
+                                    totalCount = response.totalCount,
+                                    lastUpdateTime = getCurrentFormattedTime()
+                                )
+                            }
                         }
                     } catch (_: Exception) {
-                        _uiState.update { it.copy(isLoading = false, logsList = emptyList(), totalCount = 0) }
+                        _uiState.update { it.copy(isLoading = false, isGraphLoading = false, logsList = emptyList(), totalCount = 0) }
                     }
                 } else {
                     _uiState.update { it.copy(isLoading = false, logsList = emptyList(), totalCount = 0) }
                 }
             } catch (_: Exception) {
                 _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun loadDeviceData() {
+        val deviceId = _uiState.value.selectedDeviceId ?: return
+        val period = _uiState.value.selectedPeriod.name
+        val param = _uiState.value.selectedParamIdentifier
+        val page = _uiState.value.currentPage
+        val pageSize = 8
+
+        viewModelScope.launch {
+            try {
+                val response = api.getEquipmentLogs(deviceId, period, param, page, pageSize)
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        isPageLoading = false,
+                        logsList = response.logs,
+                        availableParams = response.availableIdentifiers,
+                        totalCount = response.totalCount
+                    )
+                }
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isLoading = false, isPageLoading = false) }
             }
         }
     }
@@ -141,8 +165,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         graphPoints = points
                     )
                 }
-            } catch (e: Exception) {
-                Log.e("API_ERROR", e.message.toString())
+            } catch (_: Exception) {
                 _uiState.update { it.copy(isGraphLoading = false) }
             }
         }
@@ -161,7 +184,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
         }
 
-        loadDeviceData()
+        loadAllData()
     }
 
     fun refreshData() {
@@ -169,7 +192,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _uiState.value = _uiState.value.copy(isRefreshing = true)
 
             loadAllData()
-            loadGraphData()
 
             _uiState.value = _uiState.value.copy(
                 isRefreshing = false
@@ -258,7 +280,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-
         sharedPrefs.edit {
             putString("api_address", address.trim())
                 .putString("api_port", port.trim())
@@ -269,23 +290,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { currentState ->
             currentState.copy(
                 addressErrorResId = null,
-                portErrorResId = null
+                portErrorResId = null,
+                isAddressSaved = true
             )
         }
-
-        Toast.makeText(application, "Настройки сохранены", Toast.LENGTH_SHORT).show()
     }
 
     fun onSettingsInputChanged(inputAddress: String, inputPort: String) {
         _uiState.update { it.copy(
             apiAddress = inputAddress,
             apiPort = inputPort
-        ) }
+        )}
 
         if (inputAddress.trim() == savedAddress && inputPort.trim() == savedPort) {
-            _uiState.update { it.copy(connectionStatus = ConnectionStatus.SUCCESS) }
+            _uiState.update { it.copy(
+                connectionStatus = ConnectionStatus.SUCCESS,
+                isAddressSaved = true
+            )}
         } else {
-            _uiState.update { it.copy(connectionStatus = ConnectionStatus.NOT_TESTED) }
+            _uiState.update { it.copy(
+                connectionStatus = ConnectionStatus.NOT_TESTED,
+                isAddressSaved = false
+            )}
         }
     }
 
@@ -381,7 +407,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             selectedPeriod = period,
             currentPage = 1)
         }
-        loadDeviceData()
+        loadDataForCurrentView()
     }
 
     fun selectParamIdentifier(identifier: String?) {
@@ -389,7 +415,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             it.copy(selectedParamIdentifier = identifier,
                 currentPage = 1)
         }
-        loadDeviceData()
+        loadDataForCurrentView()
     }
 
     fun changePage(page: Int) {
@@ -400,14 +426,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun toggleViewMode(isGraph: Boolean) {
         _uiState.update { it.copy(isGraphView = isGraph) }
-        if (isGraph) {
-            loadGraphData()
-        }
+        loadDataForCurrentView()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun getCurrentFormattedTime(): String {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"))
+    }
+
+    fun getParamColor(paramId: String): Color {
+        val hash = paramId.hashCode()
+        return Color(
+            red = (hash and 0xFF0000 shr 16) / 255f * 0.6f + 0.4f,
+            green = (hash and 0x00FF00 shr 8) / 255f * 0.6f + 0.4f,
+            blue = (hash and 0x0000FF) / 255f * 0.6f + 0.4f,
+            alpha = 1f
+        )
     }
 
     fun getDeviceName(): String {

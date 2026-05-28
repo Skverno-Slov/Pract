@@ -18,6 +18,7 @@ data class MainUiState(
     val lastUpdateTime: String = "",
     val apiAddress: String = "192.168.59.18",
     val apiPort: String = "22",
+    val isAddressSaved: Boolean = true,
     val addressErrorResId: Int? = null,
     val portErrorResId: Int? = null,
     val loginErrorMessage: Int? = null,

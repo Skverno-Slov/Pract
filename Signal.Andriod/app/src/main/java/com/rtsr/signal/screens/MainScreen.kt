@@ -1,25 +1,23 @@
 package com.rtsr.signal.screens
 
-import android.icu.util.TimeZone
+import android.graphics.Typeface
 import android.os.Build
-import android.util.Log
+import android.text.Layout
+import android.text.SpannableStringBuilder
+import android.text.TextUtils
+import android.text.style.AbsoluteSizeSpan
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,11 +28,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
@@ -85,28 +80,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import com.rtsr.signal.R
-import com.rtsr.signal.dtos.ReadingLogDto
 import com.rtsr.signal.models.AppScreen
 import com.rtsr.signal.models.MainUiState
 import com.rtsr.signal.models.PeriodType
 import com.rtsr.signal.viewmodel.AppViewModel
 import kotlinx.coroutines.launch
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.collections.map
-import kotlin.math.abs
 import kotlin.math.ceil
 
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -115,15 +102,19 @@ import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
 import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
-import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
+import com.patrykandpatrick.vico.compose.cartesian.marker.rememberDefaultCartesianMarker
+import com.patrykandpatrick.vico.compose.cartesian.rememberVicoZoomState
+import com.patrykandpatrick.vico.compose.common.component.rememberShapeComponent
+import com.patrykandpatrick.vico.compose.common.component.rememberTextComponent
+import com.patrykandpatrick.vico.compose.common.fill
+import com.patrykandpatrick.vico.core.cartesian.Zoom
 import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
 import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
-import com.patrykandpatrick.vico.core.common.component.LineComponent
-import com.rtsr.signal.dtos.GraphPointDto
-import kotlin.math.abs
+import com.patrykandpatrick.vico.core.cartesian.marker.LineCartesianLayerMarkerTarget
+import com.patrykandpatrick.vico.core.common.Insets
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -258,16 +249,17 @@ fun MainNavigationContainer(vm: AppViewModel) {
                                     ) { page ->
                                         when (page) {
                                             0 -> DashboardScreen(
-                                                uiState = vm.uiState.collectAsState().value,
-                                                onPeriodSelected = { period -> vm.selectPeriod(period) },
-                                                onViewModeChanged = { isGraph -> vm.toggleViewMode(isGraph) },
-                                                onParamSelected = { paramId -> vm.selectParamIdentifier(paramId) },
-                                                onPageSelected = { pageNum -> vm.changePage(pageNum) }
+                                                vm.uiState.collectAsState().value,
+                                                { period -> vm.selectPeriod(period) },
+                                                { isGraph -> vm.toggleViewMode(isGraph) },
+                                                { paramId -> vm.selectParamIdentifier(paramId) },
+                                                { pageNum -> vm.changePage(pageNum) },
+                                                {paramId -> vm.getParamColor(paramId)}
                                             )
 
                                             1 -> DeviceListScreen(
-                                                uiState = uiState,
-                                                onDeviceSelected = { deviceId ->
+                                                uiState,
+                                                { deviceId ->
                                                     vm.selectDevice(deviceId)
                                                     scope.launch { pagerState.animateScrollToPage(0) }
                                                 }
@@ -285,6 +277,7 @@ fun MainNavigationContainer(vm: AppViewModel) {
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
@@ -292,7 +285,8 @@ fun DashboardScreen(
     onPeriodSelected: (PeriodType) -> Unit,
     onViewModeChanged: (Boolean) -> Unit,
     onParamSelected: (String?) -> Unit,
-    onPageSelected: (Int) -> Unit
+    onPageSelected: (Int) -> Unit,
+    getParamColor: (String) -> Color
 ) {
     val currentDevice = uiState.devices.find { it.serialNumber == uiState.selectedDeviceId }
     val colorScheme = MaterialTheme.colorScheme
@@ -310,9 +304,34 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                item { FilterChip(selected = uiState.selectedParamIdentifier == null, onClick = { onParamSelected(null) }, label = { Text("Все") }) }
+                item {
+                    FilterChip(
+                        selected = uiState.selectedParamIdentifier == null,
+                        onClick = { onParamSelected(null) },
+                        label = { Text(stringResource(R.string.str_all)) },
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = uiState.selectedParamIdentifier == null,
+                            borderColor = Color.Gray,
+                            selectedBorderColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
                 items(uiState.availableParams) { paramId ->
-                    FilterChip(selected = uiState.selectedParamIdentifier == paramId, onClick = { onParamSelected(paramId) }, label = { Text(paramId) }) }
+                    val paramColor = remember(paramId) { getParamColor(paramId) }
+                    FilterChip(
+                        selected = uiState.selectedParamIdentifier == paramId,
+                        onClick = { onParamSelected(paramId) },
+                        label = { Text(paramId) },
+                        border = FilterChipDefaults.filterChipBorder(
+                            enabled = true,
+                            selected = uiState.selectedParamIdentifier == paramId,
+                            borderColor = paramColor,
+                            selectedBorderColor = paramColor,
+                            selectedBorderWidth = 2.dp
+                        )
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -320,15 +339,174 @@ fun DashboardScreen(
         if (uiState.isGraphView) {
             item {
                 if (uiState.isGraphLoading) {
-                    Box(modifier = Modifier.fillMaxWidth().height(280.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 } else {
-                    InteractiveParamChart(
-                        graphPoints = uiState.graphPoints,
-                        selectedParam = uiState.selectedParamIdentifier,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    val filteredPoints = remember(uiState.graphPoints, uiState.selectedParamIdentifier) {
+                        if (uiState.selectedParamIdentifier == null) {
+                            uiState.graphPoints
+                        } else {
+                            uiState.graphPoints.filter { it.param == uiState.selectedParamIdentifier }
+                        }
+                    }
+
+                    val pointsByParam = remember(filteredPoints) {
+                        filteredPoints.groupBy { it.param }
+                    }
+
+                    val modelProducer = remember { CartesianChartModelProducer() }
+
+                    val xDateLabels = remember(filteredPoints) {
+                        filteredPoints.map { it.dt }.distinct().sorted()
+                    }
+
+                    LaunchedEffect(pointsByParam, xDateLabels) {
+                        if (pointsByParam.isNotEmpty() && xDateLabels.isNotEmpty()) {
+                            modelProducer.runTransaction {
+                                lineSeries {
+                                    pointsByParam.forEach { (_, points) ->
+                                        series(
+                                            x = points.map { xDateLabels.indexOf(it.dt).toFloat() },
+                                            y = points.map { it.value.toFloatOrNull() ?: 0f }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (pointsByParam.isNotEmpty()) {
+
+                        val lineProvider = LineCartesianLayer.LineProvider.series(
+                            pointsByParam.keys.map { paramId ->
+                                val paramColor = getParamColor(paramId)
+                                LineCartesianLayer.rememberLine(
+                                    fill = LineCartesianLayer.LineFill.single(fill(paramColor))
+                                )
+                            }
+                        )
+
+                        val density = androidx.compose.ui.platform.LocalDensity.current
+                        val valueTextSizePx = remember(density) { with(density) { 18.sp.toPx().toInt() } }
+                        val dateTextSizePx = remember(density) { with(density) { 12.sp.toPx().toInt() } }
+
+                        val defaultMarker = rememberDefaultCartesianMarker(
+                            label = rememberTextComponent(
+                                color = Color.White,
+                                background = rememberShapeComponent(
+                                    shape = com.patrykandpatrick.vico.core.common.shape.Shape.Rectangle,
+                                    fill = fill(MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
+                                ),
+                                lineCount = 3,
+                                truncateAt = TextUtils.TruncateAt.MARQUEE,
+                                textAlignment = Layout.Alignment.ALIGN_CENTER,
+                                padding = Insets(horizontalDp = 12f, verticalDp = 8f),
+                                minWidth = com.patrykandpatrick.vico.core.common.component.TextComponent.MinWidth.fixed(160f)
+                            ),
+                            valueFormatter = { _, targets ->
+                                val lineTarget = targets.firstOrNull() as? LineCartesianLayerMarkerTarget
+                                val xIndex = lineTarget?.x?.toInt() ?: 0
+
+                                val rawY = lineTarget?.points?.firstOrNull()?.entry?.y
+                                val yValue = if (rawY != null) {
+                                    String.format(java.util.Locale.US, "%.2f", rawY)
+                                        .dropLastWhile { it == '0' }
+                                        .dropLastWhile { it == '.' }
+                                } else {
+                                    "0.0"
+                                }
+
+                                val fullDateTime = xDateLabels.getOrNull(xIndex) ?: "—"
+                                val formattedTime = try {
+                                    val instant = java.time.Instant.parse(fullDateTime)
+
+                                    val localDateTime = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+
+                                    val outputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
+                                    localDateTime.format(outputFormatter)
+                                } catch (_: Exception) {
+                                    try {
+                                        val cleanFormat = fullDateTime.take(19).replace("T", " ")
+                                        val inputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                        val outputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
+                                        java.time.LocalDateTime.parse(cleanFormat, inputFormatter).format(outputFormatter)
+                                    } catch (_: Exception) {
+                                        fullDateTime
+                                    }
+                                }
+
+                                SpannableStringBuilder().apply {
+                                    val valueStart = length
+                                    append(yValue)
+                                    val valueEnd = length
+
+                                    setSpan(StyleSpan(Typeface.BOLD), valueStart, valueEnd, 0)
+                                    setSpan(ForegroundColorSpan(android.graphics.Color.WHITE), valueStart, valueEnd, 0)
+                                    setSpan(AbsoluteSizeSpan(valueTextSizePx, false), valueStart, valueEnd, 0)
+
+                                    append("\n")
+
+                                    val dateStart = length
+                                    append(formattedTime)
+                                    val dateEnd = length
+
+                                    setSpan(ForegroundColorSpan(android.graphics.Color.parseColor("#A0A0A0")), dateStart, dateEnd, 0)
+                                    setSpan(AbsoluteSizeSpan(dateTextSizePx, false), dateStart, dateEnd, 0)
+                                }
+                            }
+                        )
+
+                        val chart = rememberCartesianChart(
+                            rememberLineCartesianLayer(lineProvider = lineProvider),
+                            startAxis = VerticalAxis.rememberStart(
+                                label = rememberTextComponent(color = MaterialTheme.colorScheme.onBackground)
+                            ),
+                            bottomAxis = HorizontalAxis.rememberBottom(
+                                label = rememberTextComponent(color = MaterialTheme.colorScheme.onBackground),
+                                labelRotationDegrees = 45f,
+                                valueFormatter = { value, _, _ ->
+                                    val index = value.toString().substringBefore(".").toIntOrNull() ?: 0
+                                    val fullDateTime = xDateLabels.getOrNull(index) ?: ""
+                                    try {
+                                        val inputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                        val outputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")
+                                        java.time.LocalDateTime.parse(fullDateTime, inputFormatter).format(outputFormatter)
+                                    } catch (e: Exception) {
+                                        fullDateTime.take(10)
+                                    }
+                                },
+                                itemPlacer = HorizontalAxis.ItemPlacer.aligned(
+                                    spacing = {4},
+                                    addExtremeLabelPadding = true
+                                )
+                            ),
+                            marker = defaultMarker
+                        )
+
+                        CartesianChartHost(
+                            chart = chart,
+                            modelProducer = modelProducer,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(320.dp),
+                            zoomState = rememberVicoZoomState(
+                                minZoom = Zoom.Content,
+                                maxZoom = Zoom.fixed(8f)
+                            )
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(280.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(stringResource(R.string.err_graf_no_data), color = Color.Gray)
+                        }
+                    }
                 }
             }
         } else {
@@ -349,10 +527,12 @@ fun DashboardScreen(
             }
 
             item {
-                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(text = "Показание", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
-                    Text(text = "Значение", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1.5f), textAlign = TextAlign.End)
-                    Text(text = "Дата", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f), textAlign = TextAlign.End)
+                Row(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(text = stringResource(R.string.header_param_name), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
+                    Text(text = stringResource(R.string.header_param_value), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1.5f), textAlign = TextAlign.End)
+                    Text(text = stringResource(R.string.header_param_date), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f), textAlign = TextAlign.End)
                 }
                 HorizontalDivider(color = colorScheme.outlineVariant)
             }
@@ -390,7 +570,9 @@ fun DashboardScreen(
 
         if (uiState.isLoading && uiState.logsList.isEmpty()) {
             item {
-                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(modifier = Modifier.size(32.dp))
                 }
             }
@@ -419,192 +601,6 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(24.dp))
         }
     }
-}
-
-@Composable
-fun InteractiveParamChart(
-    graphPoints: List<GraphPointDto>,
-    selectedParam: String?,
-    modifier: Modifier = Modifier
-) {
-    val filteredPoints = remember(graphPoints, selectedParam) {
-        if (selectedParam == null) graphPoints else graphPoints.filter { it.param == selectedParam }
-    }
-
-    if (filteredPoints.isEmpty()) {
-        Box(modifier = modifier.height(300.dp), contentAlignment = Alignment.Center) {
-            Text("Нет данных для графика", color = Color.Gray)
-        }
-        return
-    }
-
-    val validNumericPoints = remember(filteredPoints) {
-        filteredPoints.filter { point ->
-            val cleanValue = point.`value`.replace(",", ".")
-            val floatVal = cleanValue.toFloatOrNull()
-            floatVal != null && !floatVal.isNaN() && !floatVal.isInfinite()
-        }
-    }
-
-    val optimizedPoints = remember(validNumericPoints) {
-        val maxPoints = 500
-        if (validNumericPoints.size > maxPoints) {
-            val step = validNumericPoints.size / maxPoints
-            validNumericPoints.filterIndexed { index, _ -> index % step == 0 }
-        } else {
-            validNumericPoints
-        }
-    }
-
-    val groupedPoints = remember(optimizedPoints) { optimizedPoints.groupBy { it.param } }
-
-    val paramBounds = remember(optimizedPoints) {
-        groupedPoints.mapValues { (_, points) ->
-            val values = points.map { it.`value`.replace(",", ".").toFloatOrNull() ?: 0f }
-            val min = values.minOrNull() ?: 0f
-            val max = values.maxOrNull() ?: 100f
-            val delta = if (max == min || (max - min) == 0f) 1f else max - min
-            (min - delta * 0.1f) to (max + delta * 0.1f)
-        }
-    }
-
-    val globalMinMax = remember(paramBounds) {
-        val mins = paramBounds.values.map { it.first }
-        val maxs = paramBounds.values.map { it.second }
-        (mins.minOrNull() ?: 0f) to (maxs.maxOrNull() ?: 100f)
-    }
-
-    var scaleX by remember { mutableStateOf(1f) }
-    var offsetX by remember { mutableStateOf(0f) }
-
-    val transformState = rememberTransformableState { zoomChange, offsetChange, _ ->
-        scaleX = (scaleX * zoomChange).coerceIn(1f, 30f)
-        offsetX += offsetChange.x
-    }
-
-    val colorScheme = MaterialTheme.colorScheme
-
-    Column(modifier = modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
-                .background(colorScheme.surfaceVariant.copy(alpha = 0.2f))
-                .transformable(state = transformState)
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize().padding(start = 50.dp, bottom = 30.dp, top = 10.dp, end = 10.dp)) {
-                val width = size.width
-                val height = size.height
-
-                val maxOffset = 0f
-                val minOffset = -(width * scaleX - width)
-                offsetX = offsetX.coerceIn(minOffset, maxOffset)
-
-                for (i in 0..4) {
-                    val yCoeff = i.toFloat() / 4f
-                    val yPos = height - (yCoeff * height)
-                    drawLine(
-                        color = Color.LightGray.copy(alpha = 0.4f),
-                        start = Offset(0f, yPos),
-                        end = Offset(width, yPos),
-                        strokeWidth = 1.dp.toPx()
-                    )
-                }
-
-                groupedPoints.forEach { (paramName, points) ->
-                    if (points.size < 2) return@forEach
-
-                    val path = Path()
-                    val xSpacing = width / (points.size - 1)
-                    var isFirst = true
-
-                    val bounds = paramBounds[paramName] ?: (0f to 100f)
-                    val pMin = bounds.first
-                    val pMax = bounds.second
-                    val pRange = if ((pMax - pMin) == 0f) 1f else (pMax - pMin)
-
-                    points.forEachIndexed { index, point ->
-                        val cleanValue = point.`value`.replace(",", ".")
-                        val yVal = cleanValue.toFloatOrNull() ?: return@forEachIndexed
-
-                        val xPos = (index * xSpacing * scaleX) + offsetX
-                        val yPos = height - (((yVal - pMin) / pRange) * height)
-
-                        if (!xPos.isNaN() && !xPos.isInfinite() && !yPos.isNaN() && !yPos.isInfinite()) {
-                            if (isFirst) {
-                                path.moveTo(xPos, yPos)
-                                isFirst = false
-                            } else {
-                                path.lineTo(xPos, yPos)
-                            }
-                        }
-                    }
-
-                    if (!isFirst) {
-                        drawPath(
-                            path = path,
-                            color = getParamColor(paramName),
-                            style = Stroke(width = 2.dp.toPx())
-                        )
-                    }
-                }
-            }
-
-            Column(
-                modifier = Modifier.fillMaxHeight().padding(bottom = 30.dp, top = 10.dp, start = 6.dp),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                val bounds = if (selectedParam != null) paramBounds[selectedParam] ?: (0f to 100f) else globalMinMax
-                val yMin = bounds.first
-                val yMax = bounds.second
-                val step = (yMax - yMin) / 4f
-
-                for (i in 4 downTo 0) {
-                    val value = yMin + (step * i)
-                    val textToShow = if (value.isNaN() || value.isInfinite()) "0.0" else String.format(java.util.Locale.US, "%.1f", value)
-                    Text(
-                        text = textToShow,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Gray
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomStart)
-                    .padding(start = 50.dp, bottom = 4.dp, end = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (optimizedPoints.size >= 3) {
-                    val firstTime = optimizedPoints.first().dt.substringAfter("T").take(5)
-                    val midTime = optimizedPoints[optimizedPoints.size / 2].dt.substringAfter("T").take(5)
-                    val lastTime = optimizedPoints.last().dt.substringAfter("T").take(5)
-
-                    Text(text = firstTime, fontSize = 10.sp, color = Color.Gray)
-                    Text(text = midTime, fontSize = 10.sp, color = Color.Gray)
-                    Text(text = lastTime, fontSize = 10.sp, color = Color.Gray)
-                }
-            }
-        }
-    }
-}
-
-fun getParamColor(paramIdentifier: String?): Color {
-    if (paramIdentifier.isNullOrBlank()) return Color.Gray
-    val colors = listOf(
-        Color(0xFF007AFF),
-        Color(0xFF34C759),
-        Color(0xFFFF9500),
-        Color(0xFFFF2D55),
-        Color(0xFF5856D6),
-        Color(0xFFAF52DE)
-    )
-    val positiveHashCode = paramIdentifier.hashCode() and 0x7FFFFFFF
-    val index = positiveHashCode % colors.size
-    return colors[index]
 }
 
 @Composable
@@ -770,7 +766,9 @@ fun LoadingStateScreen() {
 @Composable
 fun EmptyStateScreen(onRefresh: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

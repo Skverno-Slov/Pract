@@ -40,4 +40,9 @@
     <string name="mail_subject">Сообщение о проблеме в SignalTrack</string>
     <string name="mail_body">"\n        Здравствуйте                    \n        \n        Я обнаружил проблему в работе приложения.\n        \n        1. Описание проблемы:\n        [ Опишите, что пошло не так ]\n        \n        2. Шаги для воспроизведения:\n        - \n        - \n        \n        3. Ожидаемый результат:\n        [ Как приложение должно было сработать ]\n        \n        ---\n        Пожалуйста, не изменяйте строки ниже.\n        Устройство: %1$s\n        Версия Android: %2$s\n    "</string>
     <string name="str_write_mail">Написать письмо</string>
+    <string name="err_graf_no_data">Нет данных за этот период</string>
+    <string name="header_param_name">Параметр</string>
+    <string name="header_param_value">Значение</string>
+    <string name="header_param_date">Дата</string>
+    <string name="str_all">Все</string>
 </resources>

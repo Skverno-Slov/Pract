@@ -2,10 +2,12 @@ package com.rtsr.signal.screens
 
 import android.net.Uri
 import android.os.Build
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
@@ -30,8 +32,6 @@ import com.rtsr.signal.R
 
 @Composable
 fun ContactScreen(){
-    val uriHandler = LocalUriHandler.current
-
     val gitUri = "https://github.com/Skverno-Slov"
     val email = "zaharlukanin19@gmail.com"
 
@@ -58,7 +58,10 @@ fun ContactScreen(){
             modifier = Modifier.padding(bottom = 32.dp, top = 16.dp)
         )
 
-        Row {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp))
+        {
             Text(
                 text = "github",
                 style = MaterialTheme.typography.titleMedium,
@@ -66,11 +69,15 @@ fun ContactScreen(){
             )
 
             LinkedText(gitUri, stringResource(R.string.str_open_web))
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp))
+        {
             Text(
                 text = "E-mail",
                 style = MaterialTheme.typography.titleMedium,

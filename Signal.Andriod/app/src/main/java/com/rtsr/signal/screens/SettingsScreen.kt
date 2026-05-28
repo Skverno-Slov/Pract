@@ -39,6 +39,7 @@ import com.rtsr.signal.R
 import com.rtsr.signal.models.AppScreen
 import com.rtsr.signal.models.ConnectionStatus
 import com.rtsr.signal.models.MainUiState
+import java.nio.file.WatchEvent
 
 @Composable
 fun SettingsScreen(
@@ -116,11 +117,27 @@ fun SettingsScreen(
                     .height(50.dp),
                 enabled = uiState.connectionStatus == ConnectionStatus.SUCCESS && !uiState.isConnectionChecking
             ) {
-                Text(
-                    text = stringResource(R.string.btn_save),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.btn_save),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    val icon = if (uiState.isAddressSaved) Icons.Default.Check else Icons.Default.Clear
+                    val iconContentDescription = if (uiState.isAddressSaved) "Saved" else "Unsaved"
+
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = iconContentDescription,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
             Button(
