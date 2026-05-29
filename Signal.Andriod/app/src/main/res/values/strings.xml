@@ -45,4 +45,6 @@
     <string name="header_param_value">Значение</string>
     <string name="header_param_date">Дата</string>
     <string name="str_all">Все</string>
+    <string name="header_status_name">Статус</string>
+    <string name="err_no_actual_data">Нет актуальных показаний</string>
 </resources>

@@ -1,19 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models;
+namespace Signal.Server.Data.Models.Models;
 
-public partial class session
+[Table("session")]
+[Index("UserId", Name = "idx_sessions_user")]
+[Index("RefreshToken", Name = "session_refresh_token_key", IsUnique = true)]
+public partial class Session
 {
-    public int session_id { get; set; }
+    [Key]
+    [Column("session_id")]
+    public int SessionId { get; set; }
 
-    public int user_id { get; set; }
+    [Column("user_id")]
+    public int UserId { get; set; }
 
-    public string refresh_token { get; set; } = null!;
+    [Column("refresh_token")]
+    public string RefreshToken { get; set; } = null!;
 
-    public string? device { get; set; }
+    [Column("device")]
+    [StringLength(255)]
+    public string? Device { get; set; }
 
-    public DateTime session_end_date_time { get; set; }
+    [Column("session_end_date_time")]
+    public DateTime SessionEndDateTime { get; set; }
 
-    public virtual user user { get; set; } = null!;
+    [ForeignKey("UserId")]
+    [InverseProperty("Sessions")]
+    public virtual User User { get; set; } = null!;
 }

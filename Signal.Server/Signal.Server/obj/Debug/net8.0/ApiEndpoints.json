@@ -101,6 +101,32 @@
   },
   {
     "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "GetLatestReadings",
+    "RelativePath": "api/equipment/{serialNumber}/latest",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "serialNumber",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[Signal.Server.Data.Dtos.LatestReadingResponse, Signal.Server, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
     "Method": "GetEquipmentLogs",
     "RelativePath": "api/equipment/{serialNumber}/logs",
     "HttpMethod": "GET",

@@ -59,7 +59,7 @@ fun AuthorizationScreen(
             label = { Text(stringResource(R.string.login_hint)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            enabled = !isLoaderActive, // Блокировка
+            enabled = !isLoaderActive,
             isError = uiState.loginErrorMessage != null
         )
 

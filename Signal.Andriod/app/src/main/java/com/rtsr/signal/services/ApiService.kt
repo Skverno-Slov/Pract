@@ -2,6 +2,7 @@ package com.rtsr.signal.services
 
 import com.rtsr.signal.dtos.EquipmentDto
 import com.rtsr.signal.dtos.GraphPointDto
+import com.rtsr.signal.dtos.LatestReadingResponse
 import com.rtsr.signal.dtos.LoginRequest
 import com.rtsr.signal.dtos.PagedLogsDto
 import com.rtsr.signal.dtos.PingResponse
@@ -59,6 +60,11 @@ interface ApiService {
         @Path("serialNumber") serialNumber: String,
         @Query("period") period: String
     ): List<GraphPointDto>
+
+    @GET("api/equipment/{serialNumber}/latest")
+    suspend fun getLatestReadings(
+        @Path("serialNumber") serialNumber: String
+    ): List<LatestReadingResponse>
 }
 
 object NetworkClient {

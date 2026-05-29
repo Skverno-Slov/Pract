@@ -2,6 +2,7 @@ package com.rtsr.signal.models
 
 import com.rtsr.signal.dtos.EquipmentDto
 import com.rtsr.signal.dtos.GraphPointDto
+import com.rtsr.signal.dtos.LatestReadingResponse
 import com.rtsr.signal.dtos.ReadingLogDto
 
 data class MainUiState(
@@ -14,7 +15,7 @@ data class MainUiState(
     val devices: List<EquipmentDto> = emptyList(),
     val selectedDeviceId: String? = null,
     val selectedPeriod: PeriodType = PeriodType.ALL_TIME,
-    val isGraphView: Boolean = true,
+    val viewMode: ViewMode = ViewMode.LATEST,
     val lastUpdateTime: String = "",
     val apiAddress: String = "192.168.59.18",
     val apiPort: String = "22",
@@ -32,5 +33,6 @@ data class MainUiState(
     val isPageLoading: Boolean = false,
     val totalCount: Int = 0,
     val graphPoints: List<GraphPointDto> = emptyList(),
-    val isGraphLoading: Boolean = false
+    val isGraphLoading: Boolean = false,
+    val latestReadings: List<LatestReadingResponse> = emptyList(),
 )

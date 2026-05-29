@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Signal.Server.Data.Models.Models;
+using System;
 using System.Collections.Generic;
 
 namespace Signal.Server.Data.Models;
@@ -17,9 +18,9 @@ public partial class reading_log
 
     public string value { get; set; } = null!;
 
-    public virtual equipment equipment { get; set; } = null!;
+    public virtual Equipment equipment { get; set; } = null!;
 
-    public virtual reading_type reading_type { get; set; } = null!;
+    public virtual ReadingType reading_type { get; set; } = null!;
 
-    public virtual status status { get; set; } = null!;
+    public virtual Status status { get; set; } = null!;
 }

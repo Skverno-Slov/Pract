@@ -1,23 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models;
+namespace Signal.Server.Data.Models.Models;
 
-public partial class user
+[Table("user")]
+[Index("Login", Name = "user_login_key", IsUnique = true)]
+public partial class User
 {
-    public int user_id { get; set; }
+    [Key]
+    [Column("user_id")]
+    public int UserId { get; set; }
 
-    public string login { get; set; } = null!;
+    [Column("login")]
+    [StringLength(50)]
+    public string Login { get; set; } = null!;
 
-    public string hashed_password { get; set; } = null!;
+    [Column("hashed_password")]
+    [StringLength(255)]
+    public string HashedPassword { get; set; } = null!;
 
-    public string second_name { get; set; } = null!;
+    [Column("second_name")]
+    [StringLength(100)]
+    public string SecondName { get; set; } = null!;
 
-    public string first_name { get; set; } = null!;
+    [Column("first_name")]
+    [StringLength(100)]
+    public string FirstName { get; set; } = null!;
 
-    public string? last_name { get; set; }
+    [Column("last_name")]
+    [StringLength(100)]
+    public string? LastName { get; set; }
 
-    public virtual ICollection<session> sessions { get; set; } = new List<session>();
+    [InverseProperty("User")]
+    public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
 
-    public virtual ICollection<role> roles { get; set; } = new List<role>();
+    [ForeignKey("UserId")]
+    [InverseProperty("Users")]
+    public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 }

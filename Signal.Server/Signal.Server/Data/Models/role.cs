@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models;
+namespace Signal.Server.Data.Models.Models;
 
-public partial class role
+[Table("role")]
+[Index("Name", Name = "role_name_key", IsUnique = true)]
+public partial class Role
 {
-    public int role_id { get; set; }
+    [Key]
+    [Column("role_id")]
+    public int RoleId { get; set; }
 
-    public string name { get; set; } = null!;
+    [Column("name")]
+    [StringLength(50)]
+    public string Name { get; set; } = null!;
 
-    public virtual ICollection<user> users { get; set; } = new List<user>();
+    [ForeignKey("RoleId")]
+    [InverseProperty("Roles")]
+    public virtual ICollection<User> Users { get; set; } = new List<User>();
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Signal.Server.Data.Dtos;
+using Signal.Server.Data.Models.Models;
 using Signal.Server.Services;
 using System.Security.Claims;
 
@@ -38,6 +39,19 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
     {
         var devices = await equipmentService.GetAllEquipmentAsync();
         return Ok(devices);
+    }
+
+    [HttpGet("{serialNumber}/latest")]
+    public async Task<ActionResult<IEnumerable<LatestReadingResponse>>> GetLatestReadings(string serialNumber)
+    {
+        var exists = await equipmentService.CheckEquipmentExistsAsync(serialNumber);
+        if (!exists)
+        {
+            return NotFound($"Прибор с серийным номером '{serialNumber}' не найден.");
+        }
+
+        var readings = await equipmentService.GetLatestReadingsAsync(serialNumber);
+        return Ok(readings);
     }
 
 }

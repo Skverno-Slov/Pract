@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Signal.Server.Data;
 using Signal.Server.Data.Dtos;
+using Signal.Server.Data.Models.Models;
 
 namespace Signal.Server.Services
 {
@@ -20,35 +21,36 @@ namespace Signal.Server.Services
 
             ApplyPeriod(periodType, now, ref startDate, ref endDate);
 
-            var availableIdentifiers = await context.reading_logs
-                .Where(rl => rl.equipment.serial_number == serialNumber)
-                .Select(rl => rl.reading_type.identifier)
+            var availableIdentifiers = await context.ReadingLogs
+                .Where(rl => rl.Equipment.SerialNumber == serialNumber)
+                .Select(rl => rl.ReadingType.Identifier)
                 .Distinct()
                 .ToListAsync();
 
-            var query = context.reading_logs
-                .AsNoTracking()
-                .Where(rl => rl.equipment.serial_number == serialNumber);
+            var query = context.ReadingLogs
+                .Where(rl => rl.Equipment.SerialNumber == serialNumber 
+                && rl.Status.Name.ToLower() != "ok");
 
-            if (startDate.HasValue) query = query.Where(rl => rl.write_date_time >= startDate.Value);
-            if (endDate.HasValue) query = query.Where(rl => rl.write_date_time < endDate.Value);
+            if (startDate.HasValue) query = query.Where(rl => rl.WriteDateTime >= startDate.Value);
+            if (endDate.HasValue) query = query.Where(rl => rl.WriteDateTime < endDate.Value);
 
             if (!string.IsNullOrEmpty(readingIdentifier))
             {
-                query = query.Where(rl => rl.reading_type.identifier == readingIdentifier);
+                query = query.Where(rl => rl.ReadingType.Identifier == readingIdentifier);
             }
 
             int totalCount = await query.CountAsync();
 
             var logs = await query
-                .OrderByDescending(rl => rl.write_date_time)
+                .OrderByDescending(rl => rl.WriteDateTime)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(rl => new ReadingLogResponse(
-                    rl.reading_type.name,
-                    rl.value,
-                    rl.reading_type.unit,
-                    rl.write_date_time
+                    rl.ReadingType.Name,
+                    rl.Value,
+                    rl.ReadingType.Unit,
+                    rl.Status.Name,
+                    rl.WriteDateTime
                 ))
                 .ToListAsync();
 
@@ -57,16 +59,16 @@ namespace Signal.Server.Services
 
         public async Task<List<EquipmentResponse>> GetAllEquipmentAsync()
         {
-            return await context.equipment
-                .OrderBy(e => e.model) 
-                .ThenBy(e => e.name)
+            return await context.Equipment
+                .OrderBy(e => e.Model) 
+                .ThenBy(e => e.Name)
                 .Select(e => new EquipmentResponse(
-                    e.equipment_id,
-                    e.serial_number,
-                    e.name,
-                    e.model,
-                    e.status.name, 
-                    e.last_check_date
+                    e.EquipmentId,
+                    e.SerialNumber,
+                    e.Name,
+                    e.Model,
+                    e.Status.Name, 
+                    e.LastCheckDate
                 ))
                 .ToListAsync();
         }
@@ -79,19 +81,42 @@ namespace Signal.Server.Services
 
             ApplyPeriod(periodType, now, ref startDate, ref endDate);
 
-            var query = context.reading_logs
-                .AsNoTracking() 
-                .Where(rl => rl.equipment.serial_number == serialNumber);
+            var query = context.ReadingLogs
+                .Where(rl => rl.Equipment.SerialNumber == serialNumber);
 
-            if (startDate.HasValue) query = query.Where(rl => rl.write_date_time >= startDate.Value);
-            if (endDate.HasValue) query = query.Where(rl => rl.write_date_time < endDate.Value);
+            if (startDate.HasValue) query = query.Where(rl => rl.WriteDateTime >= startDate.Value);
+            if (endDate.HasValue) query = query.Where(rl => rl.WriteDateTime < endDate.Value);
 
             return await query
-                .OrderBy(rl => rl.write_date_time) 
+                .OrderBy(rl => rl.WriteDateTime) 
                 .Select(rl => new GraphPointResponse(
-                    rl.reading_type.identifier,
-                    rl.value, 
-                    rl.write_date_time
+                    rl.ReadingType.Identifier,
+                    rl.Value, 
+                    rl.WriteDateTime
+                ))
+                .ToListAsync();
+        }
+
+        public async Task<bool> CheckEquipmentExistsAsync(string serialNumber)
+        {
+            return await context.Equipment
+                .AnyAsync(e => e.SerialNumber == serialNumber);
+        }
+
+        public async Task<IEnumerable<LatestReadingResponse>> GetLatestReadingsAsync(string serialNumber)
+        {
+            return await context.ViewLatestEquipmentReadings
+                .Where(r => r.SerialNumber == serialNumber)
+                .Select(r => new LatestReadingResponse(
+                    r.SerialNumber,
+                    r.MetricKey ?? "",
+                    r.Label ?? "",
+                    r.Value ?? "",
+                    r.Unit,
+                    r.Status ?? "OK",
+                    r.Datetime,
+                    r.MinValue,
+                    r.MaxValue
                 ))
                 .ToListAsync();
         }

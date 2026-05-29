@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Signal.Server.Data;
 using Signal.Server.Data.Dtos;
 using Signal.Server.Data.Models;
+using Signal.Server.Data.Models.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -58,23 +59,23 @@ namespace Signal.Server.Services
 
         public async Task<TokenResponse?> AuthenticateUserAsync(string login, string passwordRaw, string deviceName)
         {
-            var user = await context.users.FirstOrDefaultAsync(u => u.login == login);
-            if (user is null || !VerifyPassword(passwordRaw, user.hashed_password))
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Login == login);
+            if (user is null || !VerifyPassword(passwordRaw, user.HashedPassword))
             {
                 return null;
             }
 
-            var tokens = GenerateJwtTokens(user.user_id, user.first_name, user.second_name, user.last_name);
+            var tokens = GenerateJwtTokens(user.UserId, user.FirstName, user.SecondName, user.LastName);
 
-            var session = new session
+            var session = new Session
             {
-                user_id = user.user_id,
-                refresh_token = tokens.RefreshToken,
-                device = deviceName, 
-                session_end_date_time = DateTime.UtcNow.AddDays(3) 
+                UserId = user.UserId,
+                RefreshToken = tokens.RefreshToken,
+                Device = deviceName, 
+                SessionEndDateTime = DateTime.UtcNow.AddDays(3) 
             };
 
-            context.sessions.Add(session);
+            context.Sessions.Add(session);
             await context.SaveChangesAsync();
 
             return tokens;
@@ -102,19 +103,19 @@ namespace Signal.Server.Services
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return null;
 
                 var now = DateTime.UtcNow;
-                var session = await context.sessions
-                    .FirstOrDefaultAsync(s => s.user_id == userId 
-                    && s.refresh_token == refreshToken 
-                    && s.session_end_date_time > now);
+                var session = await context.Sessions
+                    .FirstOrDefaultAsync(s => s.UserId == userId 
+                    && s.RefreshToken == refreshToken 
+                    && s.SessionEndDateTime > now);
 
                 if (session is null) return null;
 
-                var user = await context.users.FindAsync(userId);
+                var user = await context.Users.FindAsync(userId);
 
-                var newTokens = GenerateJwtTokens(userId, user?.first_name, user?.second_name, user?.last_name);
+                var newTokens = GenerateJwtTokens(userId, user?.FirstName, user?.SecondName, user?.LastName);
 
-                session.refresh_token = newTokens.RefreshToken;
-                session.session_end_date_time = DateTime.UtcNow.AddDays(3);
+                session.RefreshToken = newTokens.RefreshToken;
+                session.SessionEndDateTime = DateTime.UtcNow.AddDays(3);
 
                 await context.SaveChangesAsync();
                 return newTokens;
@@ -124,10 +125,10 @@ namespace Signal.Server.Services
 
         public async Task<bool> InvalidateSessionAsync(string refreshToken)
         {
-            var session = await context.sessions.FirstOrDefaultAsync(s => s.refresh_token == refreshToken);
+            var session = await context.Sessions.FirstOrDefaultAsync(s => s.RefreshToken == refreshToken);
             if (session is not null)
             {
-                context.sessions.Remove(session);
+                context.Sessions.Remove(session);
                 await context.SaveChangesAsync();
                 return true;
             }

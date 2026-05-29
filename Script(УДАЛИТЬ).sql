@@ -56,6 +56,10 @@ CREATE TABLE "reading_log" (
     "value" VARCHAR(50) NOT NULL 
 );
 
+ALTER TABLE "reading_type" 
+ADD COLUMN "min_value" NUMERIC(10, 2),
+ADD COLUMN "max_value" NUMERIC(10, 2);
+
 --Индексы
 CREATE INDEX idx_metrics_device_time 
 ON "reading_log" ("equipment_id", "write_date_time" DESC);
@@ -63,6 +67,58 @@ ON "reading_log" ("equipment_id", "write_date_time" DESC);
 CREATE INDEX idx_sessions_user ON "session" ("user_id");
 
 --trigger
+CREATE OR REPLACE FUNCTION check_reading_status()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_min NUMERIC;
+    v_max NUMERIC;
+    v_numeric_value NUMERIC;
+    v_ok_id INT;
+    v_warning_id INT;
+    v_error_id INT;
+BEGIN
+    SELECT status_id INTO v_ok_id FROM "status" WHERE "name" ILIKE 'OK' LIMIT 1;
+    SELECT status_id INTO v_warning_id FROM "status" WHERE "name" ILIKE 'WARNING' LIMIT 1;
+    SELECT status_id INTO v_error_id FROM "status" WHERE "name" ILIKE 'ERROR' LIMIT 1;
+
+    SELECT min_value, max_value 
+    INTO v_min, v_max 
+    FROM "reading_type" 
+    WHERE "reading_type_id" = NEW.reading_type_id;
+
+    IF v_min IS NULL AND v_max IS NULL THEN
+        NEW.status_id := v_ok_id;
+        RETURN NEW;
+    END IF;
+
+    BEGIN
+        v_numeric_value := CAST(NEW.value AS NUMERIC);
+    EXCEPTION WHEN others THEN
+        v_numeric_value := NULL;
+    END;
+
+    IF v_numeric_value IS NULL THEN
+        NEW.status_id := v_error_id;
+        RETURN NEW;
+    END IF;
+
+    IF v_min IS NOT NULL AND v_numeric_value < v_min THEN
+        NEW.status_id := v_error_id;
+    ELSIF v_max IS NOT NULL AND v_numeric_value > v_max THEN
+        NEW.status_id := v_warning_id;
+    ELSE
+        NEW.status_id := v_ok_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_bi_reading_log_status
+BEFORE INSERT ON "reading_log"
+FOR EACH ROW
+EXECUTE FUNCTION check_reading_status();
+
 CREATE OR REPLACE FUNCTION clean_expired_sessions()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -95,33 +151,35 @@ FOR EACH STATEMENT
 EXECUTE FUNCTION clean_old_reading_logs();
 
 --Представление
-CREATE OR REPLACE VIEW view_latest_equipment_readings AS
-WITH ranked_readings AS (
+CREATE OR REPLACE VIEW view_latest_equipment_readings AS 
+WITH ranked_readings AS ( 
     SELECT 
-        rl.equipment_id,
-        rl.reading_type_id,
-        rl.write_date_time,
-        rl.value,
-        rl.status_id,
-        ROW_NUMBER() OVER (
+        rl.equipment_id, 
+        rl.reading_type_id, 
+        rl.write_date_time, 
+        rl.value, 
+        rl.status_id, 
+        ROW_NUMBER() OVER ( 
             PARTITION BY rl.equipment_id, rl.reading_type_id 
-            ORDER BY rl.write_date_time DESC
-        ) as rn
-    FROM reading_log rl
-)
-
+            ORDER BY rl.write_date_time DESC 
+        ) as rn 
+    FROM reading_log rl 
+) 
 SELECT 
-    rr.equipment_id,
-    rt.identifier AS metric_key,
-    rt.name AS label,
-    rr.value AS value,
-    rt.unit AS unit,
-    st.name AS status,
-    rr.write_date_time AS datetime
-FROM ranked_readings rr
-JOIN reading_type rt ON rr.reading_type_id = rt.reading_type_id
-JOIN status st ON rr.status_id = st.status_id
-WHERE rr.rn = 1; 
+    eq.serial_number, 
+    rt.identifier AS metric_key, 
+    rt.name AS label, 
+    rr.value AS value, 
+    rt.unit AS unit, 
+    st.name AS status, 
+    rr.write_date_time AS datetime,
+    rt.min_value AS min_value, 
+    rt.max_value AS max_value  
+FROM ranked_readings rr 
+JOIN equipment eq ON rr.equipment_id = eq.equipment_id 
+JOIN reading_type rt ON rr.reading_type_id = rt.reading_type_id 
+JOIN status st ON rr.status_id = st.status_id 
+WHERE rr.rn = 1;
 
 --Процедура
 CREATE OR REPLACE PROCEDURE create_new_user(
@@ -178,56 +236,27 @@ select * from "role"
 select * from "reading_log"
 select * from "reading_type"
 select * from "equipment"
+select * from "status"
 
-INSERT INTO "reading_log" ("equipment_id", "status_id", "reading_type_id", "write_date_time", "value") VALUES
-(5, 1, 4, '2026-05-25 08:49:00+00', '1'),
-(2, 1, 3, '2026-05-25 09:01:00+00', '2.3'),
-(4, 1, 2, '2026-05-25 09:11:00+00', '2.3'),
-(1, 1, 1, '2026-05-25 09:14:00+00', '63.0'),
-(3, 1, 5, '2026-05-25 09:43:00+00', '226'),
-(4, 1, 3, '2026-05-25 09:56:00+00', '1.4'),
-(1, 1, 2, '2026-05-25 10:30:00+00', '2.9'),
-(2, 1, 4, '2026-05-25 10:32:00+00', '1'),
-(5, 1, 5, '2026-05-25 10:42:00+00', '398'),
-(3, 1, 1, '2026-05-25 10:47:00+00', '62.4'),
-(4, 1, 2, '2026-05-25 11:17:00+00', '2.3'),
-(2, 1, 3, '2026-05-25 11:43:00+00', '0.5'),
-(3, 1, 5, '2026-05-25 11:47:00+00', '485'),
-(1, 1, 1, '2026-05-25 12:11:00+00', '50.5'),
-(4, 1, 3, '2026-05-25 12:18:00+00', '1.6'),
-(5, 2, 4, '2026-05-25 12:37:00+00', '0'),
-(3, 1, 1, '2026-05-25 12:39:00+00', '69.2'),
-(2, 1, 4, '2026-05-25 13:01:00+00', '1'),
-(4, 1, 2, '2026-05-25 13:41:00+00', '3.4'),
-(1, 1, 2, '2026-05-25 13:58:00+00', '2.8'),
-(5, 1, 5, '2026-05-25 14:16:00+00', '573'),
-(2, 1, 3, '2026-05-25 14:28:00+00', '1.1'),
-(3, 2, 5, '2026-05-25 14:38:00+00', '275'),
-(4, 1, 3, '2026-05-25 14:46:00+00', '0.6'),
-(1, 1, 1, '2026-05-25 15:31:00+00', '54.4'),
-(2, 1, 4, '2026-05-25 15:34:00+00', '1'),
-(5, 1, 4, '2026-05-25 15:40:00+00', '1'),
-(4, 1, 2, '2026-05-25 15:48:00+00', '3.9'),
-(3, 1, 1, '2026-05-25 15:55:00+00', '54.1'),
-(2, 1, 3, '2026-05-25 16:47:00+00', '0.7'),
-(1, 1, 2, '2026-05-25 16:52:00+00', '3.5'),
-(4, 1, 3, '2026-05-25 17:08:00+00', '0.6'),
-(3, 1, 5, '2026-05-25 17:19:00+00', '436'),
-(5, 1, 5, '2026-05-25 17:21:00+00', '248'),
-(3, 1, 1, '2026-05-25 18:07:00+00', '65.8'),
-(5, 1, 4, '2026-05-25 18:21:00+00', '1'),
-(1, 2, 1, '2026-05-25 18:29:00+00', '69.8'),
-(2, 1, 4, '2026-05-25 18:45:00+00', '1'),
-(4, 1, 2, '2026-05-25 18:49:00+00', '1.6'),
-(3, 1, 5, '2026-05-25 19:07:00+00', '387'),
-(4, 1, 3, '2026-05-25 19:35:00+00', '2.2'),
-(5, 1, 5, '2026-05-25 20:18:00+00', '405'),
-(1, 1, 2, '2026-05-25 20:25:00+00', '3.6'),
-(2, 1, 3, '2026-05-25 20:35:00+00', '2.0'),
-(3, 1, 1, '2026-05-25 20:57:00+00', '45.9'),
-(1, 2, 1, '2026-05-25 21:23:00+00', '56.7'),
-(5, 1, 4, '2026-05-25 22:07:00+00', '1'),
-(1, 1, 2, '2026-05-25 22:16:00+00', '1.9'),
-(2, 1, 4, '2026-05-25 22:20:00+00', '1'),
-(5, 1, 5, '2026-05-25 23:31:00+00', '356');
+INSERT INTO "reading_log" (
+    "equipment_id", 
+    "status_id", 
+    "reading_type_id", 
+    "write_date_time", 
+    "value"
+)
+SELECT 
+    1 AS "equipment_id",
+    floor(random() * 3 + 1)::int AS "status_id",
+    t.reading_type_id,
+    NOW() - interval '6 month' + (h.hour * INTERVAL '1 hour') AS "write_date_time",
+    round((random() * 100)::numeric, 2) AS "value"
+FROM 
+    generate_series(0, 4368) AS h(hour)
+CROSS JOIN 
+    generate_series(1, 5) AS t(reading_type_id)
+ORDER BY 
+    h.hour, t.reading_type_id;
+
+TRUNCATE TABLE "reading_log";
 

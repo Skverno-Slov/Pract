@@ -6,6 +6,7 @@ namespace Signal.Server.Data.Dtos
         [property: JsonPropertyName("readingName")] string ReadingName,
         [property: JsonPropertyName("readingValue")] string ReadingValue,
         [property: JsonPropertyName("readingUnit")] string? ReadingUnit,
+        [property: JsonPropertyName("readingStatus")] string ReadingStatus,
         [property: JsonPropertyName("writeDateTime")] DateTime WriteDateTime
 );
 }

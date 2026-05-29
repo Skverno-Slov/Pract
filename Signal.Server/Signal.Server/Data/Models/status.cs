@@ -1,15 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models;
+namespace Signal.Server.Data.Models.Models;
 
-public partial class status
+[Table("status")]
+[Index("Name", Name = "status_name_key", IsUnique = true)]
+public partial class Status
 {
-    public int status_id { get; set; }
+    [Key]
+    [Column("status_id")]
+    public int StatusId { get; set; }
 
-    public string name { get; set; } = null!;
+    [Column("name")]
+    [StringLength(50)]
+    public string Name { get; set; } = null!;
 
-    public virtual ICollection<equipment> equipment { get; set; } = new List<equipment>();
+    [InverseProperty("Status")]
+    public virtual ICollection<Equipment> Equipment { get; set; } = new List<Equipment>();
 
-    public virtual ICollection<reading_log> reading_logs { get; set; } = new List<reading_log>();
+    [InverseProperty("Status")]
+    public virtual ICollection<ReadingLog> ReadingLogs { get; set; } = new List<ReadingLog>();
 }

@@ -1,23 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models;
+namespace Signal.Server.Data.Models.Models;
 
-public partial class equipment
+[Table("equipment")]
+[Index("SerialNumber", Name = "equipment_serial_number_key", IsUnique = true)]
+public partial class Equipment
 {
-    public int equipment_id { get; set; }
+    [Key]
+    [Column("equipment_id")]
+    public int EquipmentId { get; set; }
 
-    public int status_id { get; set; }
+    [Column("status_id")]
+    public int StatusId { get; set; }
 
-    public string serial_number { get; set; } = null!;
+    [Column("serial_number")]
+    [StringLength(100)]
+    public string SerialNumber { get; set; } = null!;
 
-    public string name { get; set; } = null!;
+    [Column("name")]
+    [StringLength(150)]
+    public string Name { get; set; } = null!;
 
-    public string model { get; set; } = null!;
+    [Column("model")]
+    [StringLength(100)]
+    public string Model { get; set; } = null!;
 
-    public DateTime? last_check_date { get; set; }
+    [Column("last_check_date")]
+    public DateTime? LastCheckDate { get; set; }
 
-    public virtual ICollection<reading_log> reading_logs { get; set; } = new List<reading_log>();
+    [InverseProperty("Equipment")]
+    public virtual ICollection<ReadingLog> ReadingLogs { get; set; } = new List<ReadingLog>();
 
-    public virtual status status { get; set; } = null!;
+    [ForeignKey("StatusId")]
+    [InverseProperty("Equipment")]
+    public virtual Status Status { get; set; } = null!;
 }
