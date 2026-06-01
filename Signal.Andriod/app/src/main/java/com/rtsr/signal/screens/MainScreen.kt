@@ -8,6 +8,7 @@ import android.text.TextUtils
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -44,6 +45,9 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.ShowChart
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -236,8 +240,8 @@ fun MainNavigationContainer(vm: AppViewModel) {
                                 LoadingStateScreen()
                             }
 
-                            uiState.devices.isEmpty() -> {
-                                EmptyStateScreen({ vm.loadDeviceData() })
+                            !uiState.isConnected -> {
+                                EmptyStateScreen({ vm.loadAllData() })
                             }
 
                             else -> {
@@ -308,22 +312,25 @@ fun DashboardScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             if(uiState.viewMode != ViewMode.LATEST) {
+                val isGraphView = uiState.viewMode == ViewMode.GRAPH
                 LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    item {
-                        FilterChip(
-                            selected = uiState.selectedParamIdentifier == null,
-                            onClick = { onParamSelected(null) },
-                            label = { Text(stringResource(R.string.str_all)) },
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
+                    if (!isGraphView) {
+                        item {
+                            FilterChip(
                                 selected = uiState.selectedParamIdentifier == null,
-                                borderColor = Color.Gray,
-                                selectedBorderColor = MaterialTheme.colorScheme.primary
+                                onClick = { onParamSelected(null) },
+                                label = { Text(stringResource(R.string.str_all)) },
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = uiState.selectedParamIdentifier == null,
+                                    borderColor = Color.Gray,
+                                    selectedBorderColor = MaterialTheme.colorScheme.primary
+                                )
                             )
-                        )
+                        }
                     }
                     items(uiState.availableParams) { paramId ->
                         val paramColor = remember(paramId) { getParamColor(paramId) }
@@ -517,22 +524,31 @@ fun DashboardScreen(
                                 ),
                                 bottomAxis = HorizontalAxis.rememberBottom(
                                     label = rememberTextComponent(color = MaterialTheme.colorScheme.onBackground),
-                                    labelRotationDegrees = 45f,
-                                    valueFormatter = { value, _, _ ->
-                                        val index =
-                                            value.toString().substringBefore(".").toIntOrNull() ?: 0
+                                    labelRotationDegrees = 0f,
+                                    valueFormatter = {_, value, _ ->
+                                        val index = kotlin.math.round(value).toInt()
                                         val fullDateTime = xDateLabels.getOrNull(index) ?: ""
-                                        try {
-                                            val inputFormatter =
-                                                java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                                            val outputFormatter =
-                                                java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")
-                                            java.time.LocalDateTime.parse(
-                                                fullDateTime,
-                                                inputFormatter
-                                            ).format(outputFormatter)
-                                        } catch (e: Exception) {
-                                            fullDateTime.take(10)
+
+                                        if (fullDateTime.isEmpty()) {
+                                            ""
+                                        } else {
+                                            try {
+                                                val instant = java.time.Instant.parse(fullDateTime)
+                                                val localDateTime = java.time.LocalDateTime.ofInstant(
+                                                    instant,
+                                                    java.time.ZoneId.systemDefault()
+                                                )
+                                                localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd"))
+                                            } catch (_: Exception) {
+                                                try {
+                                                    val cleanFormat = fullDateTime.take(19).replace("T", " ")
+                                                    val inputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                                    val outputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")
+                                                    java.time.LocalDateTime.parse(cleanFormat, inputFormatter).format(outputFormatter)
+                                                } catch (_: Exception) {
+                                                    fullDateTime.take(10).replace("-", ".")
+                                                }
+                                            }
                                         }
                                     },
                                     itemPlacer = HorizontalAxis.ItemPlacer.aligned(
@@ -741,7 +757,7 @@ fun DashboardScreen(
                             contentColor = if (uiState.viewMode == ViewMode.LATEST) colorScheme.onPrimary else colorScheme.onSurface
                         )
                     ) {
-                        Icon(Icons.Default.Info, contentDescription = "Latest readings")
+                        Icon(Icons.Outlined.Info, contentDescription = "Latest readings")
                     }
 
                     IconButton(
@@ -751,7 +767,7 @@ fun DashboardScreen(
                             contentColor = if (uiState.viewMode == ViewMode.GRAPH) colorScheme.onPrimary else colorScheme.onSurface
                         )
                     ) {
-                        Icon(Icons.Default.Check, contentDescription = "Metric/Graph")
+                        Icon(Icons.Outlined.ShowChart, contentDescription = "Metric/Graph")
                     }
 
                     IconButton(
@@ -1008,7 +1024,7 @@ fun EmptyStateScreen(onRefresh: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
-            imageVector = Icons.Default.Clear,
+            imageVector = Icons.Outlined.CloudOff,
             contentDescription = null,
             modifier = Modifier.size(64.dp),
             tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)

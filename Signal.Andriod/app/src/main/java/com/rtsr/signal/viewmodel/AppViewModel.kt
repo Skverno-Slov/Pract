@@ -4,7 +4,6 @@ import android.app.Application
 import kotlinx.coroutines.flow.update
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
 import com.rtsr.signal.models.MainUiState
@@ -60,7 +59,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadAllData() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, isConnected = true) }
             try {
                 val remoteDevices = api.getEquipmentList()
                 val firstDeviceId = remoteDevices.firstOrNull()?.serialNumber
@@ -95,9 +94,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                         isGraphLoading = false,
                                         graphPoints = points,
                                         availableParams = response.availableIdentifiers,
-                                        lastUpdateTime = getCurrentFormattedTime()
+                                        lastUpdateTime = getCurrentFormattedTime(),
                                     )
                                 }
+
+                                setFirstParam()
                             }
                             ViewMode.TABLE -> {
                                 val response = api.getEquipmentLogs(
@@ -141,16 +142,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                                 }
                             }
                         }
-                    } catch (e: Exception) {
-                        Log.e("API_ERROR", e.message.toString())
-                        _uiState.update { it.copy(isLoading = false, isGraphLoading = false, logsList = emptyList(), totalCount = 0) }
+                    } catch (_: Exception) {
+                        _uiState.update { it.copy(isLoading = false, isConnected = false, isGraphLoading = false, logsList = emptyList(), totalCount = 0) }
                     }
                 } else {
                     _uiState.update { it.copy(isLoading = false, logsList = emptyList(), totalCount = 0) }
                 }
             } catch (_: Exception) {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, isConnected = false) }
             }
+        }
+    }
+
+    fun setFirstParam(){
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedParamIdentifier = _uiState.value.selectedParamIdentifier ?: _uiState.value.availableParams.firstOrNull(),
+                currentPage = 1
+            )
         }
     }
 
@@ -211,6 +220,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                         graphPoints = points
                     )
                 }
+
+                setFirstParam()
             } catch (_: Exception) {
                 _uiState.update { it.copy(isGraphLoading = false) }
             }

@@ -5,6 +5,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -70,7 +72,7 @@ fun AuthorizationScreen(
             onValueChange = { password = it },
             label = { Text(stringResource(R.string.password_hint)) },
             trailingIcon = {
-                val image = if (passwordVisible) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+                val image = if (passwordVisible) Icons.Default.Visibility else Icons.Outlined.VisibilityOff
                 IconButton(
                     onClick = { passwordVisible = !passwordVisible },
                     enabled = !isLoaderActive

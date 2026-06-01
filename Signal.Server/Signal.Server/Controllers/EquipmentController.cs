@@ -26,6 +26,7 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
         return Ok(result);
     }
 
+    [Authorize]
     [HttpGet("{serialNumber}/graph")]
     public async Task<IActionResult> GetGraphData([FromRoute] string serialNumber, [FromQuery] string period = "ALL_TIME")
     {
@@ -41,6 +42,7 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
         return Ok(devices);
     }
 
+    [Authorize]
     [HttpGet("{serialNumber}/latest")]
     public async Task<ActionResult<IEnumerable<LatestReadingResponse>>> GetLatestReadings(string serialNumber)
     {

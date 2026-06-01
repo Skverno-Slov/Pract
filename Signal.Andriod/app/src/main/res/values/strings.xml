@@ -21,7 +21,7 @@
     <string name="btn_login">Войти</string>
     <string name="error_empty_fields">Заполните все поля</string>
     <string name="error_login_failed">Неверый логин или пароль</string>
-    <string name="state_empty_title">Ничего не найдено</string>
+    <string name="state_empty_title">Ошибка подключения</string>
     <string name="state_empty_subtitle">Возможно вы не подкючены к сети</string>
     <string name="state_empty_refresh">Повторить</string>
     <string name="settings_title">Настройки подключения</string>

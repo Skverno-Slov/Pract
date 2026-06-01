@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\app.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\app.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\mainwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
       "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\mainwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
     },
@@ -23,6 +27,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "App.axaml.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\App.axaml.cs",
+              "RelativeDocumentMoniker": "Signal\\App.axaml.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\App.axaml.cs",
+              "RelativeToolTip": "Signal\\App.axaml.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAQwBwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-04T08:50:02.354Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "MainWindow.axaml",
               "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Views\\MainWindow.axaml",
               "RelativeDocumentMoniker": "Signal\\Views\\MainWindow.axaml",
@@ -35,7 +52,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainWindowViewModel.cs",
               "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\ViewModels\\MainWindowViewModel.cs",
               "RelativeDocumentMoniker": "Signal\\ViewModels\\MainWindowViewModel.cs",
@@ -43,7 +60,8 @@
               "RelativeToolTip": "Signal\\ViewModels\\MainWindowViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-04T08:25:48.859Z"
+              "WhenOpened": "2026-05-04T08:25:48.859Z",
+              "EditorCaption": ""
             }
           ]
         }

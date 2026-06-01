@@ -1,0 +1,13 @@
+﻿namespace Signal.Server.Data.Dtos
+{
+    public class UserDto
+    {
+
+        public int UserId { get; set; }
+        public string Login { get; set; } = null!;
+        public string SecondName { get; set; } = null!;
+        public string FirstName { get; set; } = null!;
+        public string? LastName { get; set; }
+    }
+}
+

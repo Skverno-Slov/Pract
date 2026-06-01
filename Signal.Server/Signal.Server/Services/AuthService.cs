@@ -57,6 +57,33 @@ namespace Signal.Server.Services
             );
         }
 
+        public async Task<UserDto?> GetUserAsync(int id)
+        {
+            return await context.Users
+                .Where(u => u.UserId == id)
+                .Select(u => new UserDto 
+                {
+                    UserId = u.UserId,
+                    Login = u.Login,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    SecondName = u.SecondName
+                }).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<UserDto>> GetUsersAsync()
+        {
+            return await context.Users
+                .Select(u => new UserDto
+                {
+                    UserId = u.UserId,
+                    Login = u.Login,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    SecondName = u.SecondName
+                }).ToListAsync();
+        }
+
         public async Task<TokenResponse?> AuthenticateUserAsync(string login, string passwordRaw, string deviceName)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Login == login);
@@ -152,6 +179,63 @@ namespace Signal.Server.Services
                 Console.WriteLine($"Ошибка регистрации пользователя: {ex.Message}");
                 return false;
             }
+        }
+
+        public async Task<bool> UpdateUserAsync(int id, UserDto dto)
+        {
+            var user = await context.Users.FindAsync(id);
+            if (user is null) return false;
+
+            if (user.Login != dto.Login)
+            {
+                bool loginExists = await context.Users.AnyAsync(u => u.Login == dto.Login);
+                if (loginExists) throw new InvalidOperationException("Логин уже занят");
+            }
+
+            user.Login = dto.Login;
+            user.SecondName = dto.SecondName;
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<bool> ResetPasswordAsync(int id, string newPassword)
+        {
+            string hashedNewPassword = HashPassword(newPassword);
+
+            var user = new User { UserId = id };
+
+            context.Entry(user).Property(u => u.HashedPassword).CurrentValue = hashedNewPassword;
+            context.Entry(user).Property(u => u.HashedPassword).IsModified = true;
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            var user = await context.Users.FindAsync(id);
+            if (user is null) return false;
+
+            context.Users.Remove(user);
+            await context.SaveChangesAsync();
+            return true;
+        }
+
+        private async Task<bool> UserExistsAsync(int id)
+        {
+            return await context.Users.AnyAsync(e => e.UserId == id);
         }
     }
 }
