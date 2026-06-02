@@ -35,17 +35,19 @@ fun AppNavigationScreen(vm: AppViewModel) {
                 AppScreen.SETTINGS -> {
                     SettingsScreen(
                         uiState = vm.uiState.collectAsState().value,
-                        onSaveClick = { address, port -> vm.saveSettings(address, port) },
-                        onFieldsValueChange = { address, port ->
+                        onSaveClick = { address, port, protocol -> vm.saveSettings(address, port, protocol) },
+                        onFieldsValueChange = { address, port, protocol ->
                             vm.onSettingsInputChanged(
                                 address,
-                                port
+                                port,
+                                protocol
                             )
                         },
-                        onCheckConnectionClick = { address, port ->
+                        onCheckConnectionClick = { address, port, protocol ->
                             vm.checkConnection(
                                 address,
-                                port
+                                port,
+                                protocol
                             )
                         },
                         onBack = { screen -> vm.navigateTo(screen) },

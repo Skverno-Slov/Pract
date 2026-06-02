@@ -2,9 +2,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using Signal.Services;
 using Signal.ViewModels;
 using Signal.Views;
 using System;
+using System.Threading.Tasks;
 
 namespace Signal
 {
@@ -24,10 +26,7 @@ namespace Signal
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
-                {
-                    DataContext = new MainWindowViewModel(),
-                };
+                desktop.MainWindow = new LoginWindow();
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -36,6 +35,16 @@ namespace Signal
         private void ConfigureServices(IServiceCollection services)
         {
 
+        }
+
+        private async Task OnApplicationExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+        {
+            try
+            {
+                if (SessionContext.AccessToken is not null)
+                    await ApiService.Instance.LogutAsync();
+            }
+            catch { }
         }
     }
 }

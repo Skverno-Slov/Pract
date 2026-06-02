@@ -14,6 +14,7 @@ import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
+import okhttp3.internal.tls.OkHostnameVerifier.verify
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -23,6 +24,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
+import javax.net.ssl.HostnameVerifier
 
 interface ApiService {
     @POST("api/auth/login")
@@ -75,7 +77,16 @@ object NetworkClient {
         val savedPort = uiState.apiPort
         val dynamicBaseUrl = "http://$savedAddress:$savedPort/"
 
-        val baseOkHttpClient = OkHttpClient.Builder().build()
+        val baseOkHttpClient = OkHttpClient
+            .Builder()
+            .hostnameVerifier { hostname, session ->
+                val isTargetIp = hostname == savedAddress
+
+                val isLocalhostCert = session.peerPrincipal?.name?.contains("CN=localhost") == true
+
+                isTargetIp && isLocalhostCert
+            }
+            .build()
 
         val baseRetrofit = Retrofit.Builder()
             .baseUrl(dynamicBaseUrl)

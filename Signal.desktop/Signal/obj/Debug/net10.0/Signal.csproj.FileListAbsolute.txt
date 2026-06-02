@@ -90,3 +90,7 @@ C:\Users\THUNDER\Documents\Pract\Signal.desktop\Signal\obj\Debug\net10.0\refint\
 C:\Users\THUNDER\Documents\Pract\Signal.desktop\Signal\obj\Debug\net10.0\Signal.pdb
 C:\Users\THUNDER\Documents\Pract\Signal.desktop\Signal\obj\Debug\net10.0\Signal.genruntimeconfig.cache
 C:\Users\THUNDER\Documents\Pract\Signal.desktop\Signal\obj\Debug\net10.0\ref\Signal.dll
+C:\Users\THUNDER\Documents\Pract\Signal.Desktop\Signal\bin\Debug\net10.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\THUNDER\Documents\Pract\Signal.Desktop\Signal\obj\Debug\net10.0\Signal.sourcelink.json
+C:\Users\THUNDER\Documents\Pract\Signal.desktop\Signal\obj\Debug\net10.0\Signal.Properties.Resources.resources
+C:\Users\THUNDER\Documents\Pract\Signal.desktop\Signal\obj\Debug\net10.0\Signal.csproj.GenerateResource.cache

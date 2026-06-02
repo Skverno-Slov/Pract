@@ -7,6 +7,7 @@ namespace Signal.Server.Data.Dtos
     [property: JsonPropertyName("refreshToken")] string RefreshToken,
     [property: JsonPropertyName("firstName")] string? FirstName,
     [property: JsonPropertyName("lastName")] string? LastName,
-    [property: JsonPropertyName("middleName")] string? MiddleName
+    [property: JsonPropertyName("middleName")] string? MiddleName,
+    [property: JsonPropertyName("role")] List<string>? Role
 );
 }

@@ -1,10 +1,62 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\",
+  "WorkspaceRootPath": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\",
   "Documents": [
     {
       "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\app.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\app.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\app.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\app.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\settingswindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\settingswindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\loginwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\loginwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\settingswindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\settingswindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\viewmodels\\loginwindowviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\viewmodels\\loginwindowviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\services\\apiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\services\\authtokenhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\services\\authtokenhandler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\services\\settingsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\services\\settingsservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\dtos\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\dtos\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\services\\networksettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\services\\networksettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\services\\sessioncontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\services\\sessioncontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\loginwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|Form",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\loginwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\mainwindow.axaml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
@@ -13,6 +65,18 @@
     {
       "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\viewmodels\\mainwindowviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\viewmodels\\mainwindowviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\loginwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\loginwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\views\\mainwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\views\\mainwindow.axaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|c:\\users\\thunder\\documents\\pract\\signal.desktop\\signal\\dtos\\tokenresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A41F4679-37A7-CDBE-84B1-25529F4F1625}|Signal\\Signal.csproj|solutionrelative:signal\\dtos\\tokenresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,46 +86,250 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "App.axaml.cs",
-              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\App.axaml.cs",
-              "RelativeDocumentMoniker": "Signal\\App.axaml.cs",
-              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\App.axaml.cs",
-              "RelativeToolTip": "Signal\\App.axaml.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAQwBwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-04T08:50:02.354Z",
+              "DocumentIndex": 1,
+              "Title": "App.axaml",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\App.axaml",
+              "RelativeDocumentMoniker": "Signal\\App.axaml",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\App.axaml",
+              "RelativeToolTip": "Signal\\App.axaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-06-02T17:03:22.629Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "MainWindow.axaml",
-              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Views\\MainWindow.axaml",
-              "RelativeDocumentMoniker": "Signal\\Views\\MainWindow.axaml",
-              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Views\\MainWindow.axaml",
-              "RelativeToolTip": "Signal\\Views\\MainWindow.axaml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "App.axaml.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\App.axaml.cs",
+              "RelativeDocumentMoniker": "Signal\\App.axaml.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\App.axaml.cs*",
+              "RelativeToolTip": "Signal\\App.axaml.cs*",
+              "ViewState": "AgIAABAAAAAAAAAAAAAmwBwAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T16:41:49.268Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Program.cs",
+              "RelativeDocumentMoniker": "Signal\\Program.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Program.cs",
+              "RelativeToolTip": "Signal\\Program.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAUAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T06:36:32.121Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SettingsWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\SettingsWindow.axaml",
+              "RelativeDocumentMoniker": "Signal\\Views\\SettingsWindow.axaml",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\SettingsWindow.axaml",
+              "RelativeToolTip": "Signal\\Views\\SettingsWindow.axaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-05-04T08:25:49.748Z",
+              "WhenOpened": "2026-06-02T09:21:37.561Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "LoginWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\LoginWindow.axaml",
+              "RelativeDocumentMoniker": "Signal\\Views\\LoginWindow.axaml",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\LoginWindow.axaml",
+              "RelativeToolTip": "Signal\\Views\\LoginWindow.axaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACUAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-06-02T09:09:28.261Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "SettingsWindow.axaml.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\SettingsWindow.axaml.cs",
+              "RelativeDocumentMoniker": "Signal\\Views\\SettingsWindow.axaml.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\SettingsWindow.axaml.cs",
+              "RelativeToolTip": "Signal\\Views\\SettingsWindow.axaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T09:21:37.487Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "LoginWindowViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\ViewModels\\LoginWindowViewModel.cs",
+              "RelativeDocumentMoniker": "Signal\\ViewModels\\LoginWindowViewModel.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\ViewModels\\LoginWindowViewModel.cs",
+              "RelativeToolTip": "Signal\\ViewModels\\LoginWindowViewModel.cs",
+              "ViewState": "AgIAACEAAAAAAAAAAAAswDQAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T09:00:29.824Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ApiService.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\ApiService.cs",
+              "RelativeDocumentMoniker": "Signal\\Services\\ApiService.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\ApiService.cs",
+              "RelativeToolTip": "Signal\\Services\\ApiService.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAYwBEAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T14:25:39.057Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "AuthTokenHandler.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\AuthTokenHandler.cs",
+              "RelativeDocumentMoniker": "Signal\\Services\\AuthTokenHandler.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\AuthTokenHandler.cs",
+              "RelativeToolTip": "Signal\\Services\\AuthTokenHandler.cs",
+              "ViewState": "AgIAAC0AAAAAAAAAAAAqwCgAAABKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T16:04:17.053Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "SettingsService.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\SettingsService.cs",
+              "RelativeDocumentMoniker": "Signal\\Services\\SettingsService.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\SettingsService.cs",
+              "RelativeToolTip": "Signal\\Services\\SettingsService.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAAwA8AAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T14:22:42.24Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "LoginRequest.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Dtos\\LoginRequest.cs",
+              "RelativeDocumentMoniker": "Signal\\Dtos\\LoginRequest.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Dtos\\LoginRequest.cs",
+              "RelativeToolTip": "Signal\\Dtos\\LoginRequest.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAAAAgAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T08:59:12.794Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "NetworkSettings.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\NetworkSettings.cs",
+              "RelativeDocumentMoniker": "Signal\\Services\\NetworkSettings.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Services\\NetworkSettings.cs",
+              "RelativeToolTip": "Signal\\Services\\NetworkSettings.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T14:21:11.822Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
               "Title": "MainWindowViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\ViewModels\\MainWindowViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\ViewModels\\MainWindowViewModel.cs",
               "RelativeDocumentMoniker": "Signal\\ViewModels\\MainWindowViewModel.cs",
-              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\ViewModels\\MainWindowViewModel.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\ViewModels\\MainWindowViewModel.cs",
               "RelativeToolTip": "Signal\\ViewModels\\MainWindowViewModel.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-04T08:25:48.859Z",
+              "WhenOpened": "2026-06-02T09:13:40.173Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SessionContext.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Services\\SessionContext.cs",
+              "RelativeDocumentMoniker": "Signal\\Services\\SessionContext.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Services\\SessionContext.cs",
+              "RelativeToolTip": "Signal\\Services\\SessionContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T08:59:58.598Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "MainWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\MainWindow.axaml",
+              "RelativeDocumentMoniker": "Signal\\Views\\MainWindow.axaml",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\MainWindow.axaml",
+              "RelativeToolTip": "Signal\\Views\\MainWindow.axaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-06-02T09:28:15.449Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "LoginWindow.axaml",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\LoginWindow.axaml",
+              "RelativeDocumentMoniker": "Signal\\Views\\LoginWindow.axaml",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\LoginWindow.axaml",
+              "RelativeToolTip": "Signal\\Views\\LoginWindow.axaml",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAAAgAAAAnAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-06-02T09:12:36.895Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "LoginWindow.axaml.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\LoginWindow.axaml.cs",
+              "RelativeDocumentMoniker": "Signal\\Views\\LoginWindow.axaml.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\LoginWindow.axaml.cs",
+              "RelativeToolTip": "Signal\\Views\\LoginWindow.axaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T09:09:28.165Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "TokenResponse.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Dtos\\TokenResponse.cs",
+              "RelativeDocumentMoniker": "Signal\\Dtos\\TokenResponse.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.desktop\\Signal\\Dtos\\TokenResponse.cs",
+              "RelativeToolTip": "Signal\\Dtos\\TokenResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAACAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T08:59:37.006Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "MainWindow.axaml.cs",
+              "DocumentMoniker": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\MainWindow.axaml.cs",
+              "RelativeDocumentMoniker": "Signal\\Views\\MainWindow.axaml.cs",
+              "ToolTip": "C:\\Users\\THUNDER\\Documents\\Pract\\Signal.Desktop\\Signal\\Views\\MainWindow.axaml.cs",
+              "RelativeToolTip": "Signal\\Views\\MainWindow.axaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-02T07:21:52.337Z"
             }
           ]
         }

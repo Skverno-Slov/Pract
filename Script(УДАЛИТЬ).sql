@@ -237,6 +237,7 @@ select * from "reading_log"
 select * from "reading_type"
 select * from "equipment"
 select * from "status"
+select * from "user_role"
 
 INSERT INTO "reading_log" (
     "equipment_id", 

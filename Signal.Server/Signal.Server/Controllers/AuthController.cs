@@ -4,6 +4,7 @@ using Signal.Server.Data.Dtos;
 using Signal.Server.Data.Models.Models;
 using Signal.Server.Services;
 using System.Security.Claims;
+using static Signal.Server.Services.AuthService;
 
 namespace SignalTrack.Api.Controllers;
 
@@ -107,5 +108,22 @@ public class AuthController(AuthService authService) : ControllerBase
         if (!result) return NotFound(new { message = "Пользователь не найден" });
 
         return NoContent();
+    }
+
+    [HttpPut("{id:int}/roles")]
+    public async Task<IActionResult> UpdateRoles(int id, [FromBody] UpdateUserRolesDto dto)
+    {
+        if (dto.Roles is null)
+        {
+            return BadRequest(new { message = "Список ролей не может быть пустым" });
+        }
+
+        var result = await authService.UpdateUserRolesAsync(id, dto.Roles);
+        if (!result)
+        {
+            return NotFound(new { message = "Пользователь не найден" });
+        }
+
+        return Ok(new { message = "Роли успешно обновлены" });
     }
 }

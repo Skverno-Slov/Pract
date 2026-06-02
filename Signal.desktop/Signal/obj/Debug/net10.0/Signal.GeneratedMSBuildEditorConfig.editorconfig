@@ -32,5 +32,11 @@ build_property.EnableCodeStyleSeverity =
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/LoginWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/MainWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/SettingsWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

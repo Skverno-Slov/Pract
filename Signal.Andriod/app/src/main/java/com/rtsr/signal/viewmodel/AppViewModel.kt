@@ -4,6 +4,7 @@ import android.app.Application
 import kotlinx.coroutines.flow.update
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.Color
 import com.rtsr.signal.models.MainUiState
@@ -35,12 +36,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val savedAddress = sharedPrefs.getString("api_address", "192.168.59.18") ?: "192.168.59.18"
     val savedPort = sharedPrefs.getString("api_port", "22") ?: "22"
 
+    val savedHttpsStatus = sharedPrefs.getString("api_protocol", "") ?: ""
+
     val api get() = NetworkClient.getApi()
 
     val tokenManager = SignalApplication.tokenManager
 
     init {
-        loadConnectionSettings(savedAddress, savedPort)
+        loadConnectionSettings(savedAddress, savedPort, savedHttpsStatus)
 
         tryAutoLogin()
     }
@@ -314,15 +317,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun loadConnectionSettings(address: String, port: String){
+    fun loadConnectionSettings(address: String, port: String, httpsStatus: String){
         _uiState.value = _uiState.value.copy(
             apiAddress = address,
-            apiPort = port
+            apiPort = port,
+            useHttps = httpsStatus
         )
         updateClient()
     }
 
-    fun saveSettings(address: String, port: String) {
+    fun saveSettings(address: String, port: String, httpsStatus: String) {
         val isAddressValid = validateAddress(address)
         val isPortValid = validatePort(port)
         if (!isAddressValid || !isPortValid) {
@@ -340,9 +344,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         sharedPrefs.edit {
             putString("api_address", address.trim())
                 .putString("api_port", port.trim())
+                .putString("api_protocol", httpsStatus)
         }
 
-        loadConnectionSettings(address, port)
+        loadConnectionSettings(address, port, httpsStatus)
 
         _uiState.update { currentState ->
             currentState.copy(
@@ -353,10 +358,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun onSettingsInputChanged(inputAddress: String, inputPort: String) {
+    fun onSettingsInputChanged(inputAddress: String, inputPort: String, httpsStatus: String) {
         _uiState.update { it.copy(
             apiAddress = inputAddress,
-            apiPort = inputPort
+            apiPort = inputPort,
+            useHttps = httpsStatus
         )}
 
         if (inputAddress.trim() == savedAddress && inputPort.trim() == savedPort) {
@@ -372,7 +378,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun checkConnection(address: String, port: String) {
+    fun checkConnection(address: String, port: String, protocol: String) {
         val isAddressValid = validateAddress(address)
         val isPortValid = validatePort(port)
 
@@ -388,7 +394,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.update { it.copy(isConnectionChecking = true, apiAddress = address, apiPort = port) }
             try {
-                val testUrl = "http://${address.trim()}:${port.trim()}/api/ping"
+                val testUrl = "http$protocol://${address.trim()}:${port.trim()}/api/ping"
 
                 val response = api.checkApiHealth(testUrl)
 
@@ -397,7 +403,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.FAILED) }
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e("API_ERROR", e.message.toString())
                 _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.FAILED) }
             }
         }

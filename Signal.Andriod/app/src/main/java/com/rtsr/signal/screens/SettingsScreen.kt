@@ -22,6 +22,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -44,13 +45,16 @@ import java.nio.file.WatchEvent
 @Composable
 fun SettingsScreen(
     uiState: MainUiState,
-    onSaveClick: (String, String) -> Unit,
-    onFieldsValueChange: (String, String) -> Unit,
-    onCheckConnectionClick: (String, String) -> Unit,
+    onSaveClick: (String, String, String) -> Unit,
+    onFieldsValueChange: (String, String, String) -> Unit,
+    onCheckConnectionClick: (String, String, String) -> Unit,
     onBack: (AppScreen) -> Unit,
     screen: AppScreen
 ) {
     val colorScheme = MaterialTheme.colorScheme
+
+    var httpsStatus by remember { mutableStateOf(uiState.useHttps) }
+    val isChecked = httpsStatus == "s"
 
     Column(
         modifier = Modifier
@@ -72,7 +76,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = uiState.apiAddress,
                 onValueChange = { newAddress ->
-                    onFieldsValueChange(newAddress, uiState.apiPort)
+                    onFieldsValueChange(newAddress, uiState.apiPort, uiState.useHttps)
                 },
                 label = { Text(stringResource(R.string.api_address_hint)) },
                 modifier = Modifier.weight(0.7f),
@@ -89,7 +93,7 @@ fun SettingsScreen(
             OutlinedTextField(
                 value = uiState.apiPort,
                 onValueChange = { newPort ->
-                    onFieldsValueChange(uiState.apiAddress, newPort)
+                    onFieldsValueChange(uiState.apiAddress, newPort, uiState.useHttps)
                 },
                 label = { Text(stringResource(R.string.port_hint)) },
                 modifier = Modifier.weight(0.3f),
@@ -111,7 +115,7 @@ fun SettingsScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
-                onClick = { onSaveClick(uiState.apiAddress, uiState.apiPort) },
+                onClick = { onSaveClick(uiState.apiAddress, uiState.apiPort, httpsStatus) },
                 modifier = Modifier
                     .weight(0.5f)
                     .height(50.dp),
@@ -141,7 +145,7 @@ fun SettingsScreen(
             }
 
             Button(
-                onClick = { onCheckConnectionClick(uiState.apiAddress, uiState.apiPort) },
+                onClick = { onCheckConnectionClick(uiState.apiAddress, uiState.apiPort, uiState.useHttps) },
                 modifier = Modifier
                     .weight(0.5f)
                     .height(50.dp),
@@ -181,6 +185,20 @@ fun SettingsScreen(
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Switch(
+            checked = isChecked,
+            onCheckedChange = { checked ->
+                httpsStatus = if (checked) "s" else ""
+                onFieldsValueChange(uiState.apiAddress, uiState.apiPort, httpsStatus)
+            }
+        )
+        Text(
+            text = stringResource(R.string.str_use_https),
+            modifier = Modifier.padding(start = 8.dp)
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 

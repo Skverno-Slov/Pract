@@ -35,5 +35,6 @@ data class MainUiState(
     val graphPoints: List<GraphPointDto> = emptyList(),
     val isGraphLoading: Boolean = false,
     val latestReadings: List<LatestReadingResponse> = emptyList(),
-    val isConnected: Boolean = true
+    val isConnected: Boolean = true,
+    val useHttps: String = ""
 )
