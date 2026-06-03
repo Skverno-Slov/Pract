@@ -27,6 +27,8 @@ namespace Signal
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new LoginWindow();
+
+                desktop.Exit += OnApplicationExit;
             }
 
             base.OnFrameworkInitializationCompleted();
@@ -37,7 +39,7 @@ namespace Signal
 
         }
 
-        private async Task OnApplicationExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+        private async void OnApplicationExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
         {
             try
             {

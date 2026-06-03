@@ -75,7 +75,8 @@ object NetworkClient {
     fun init(uiState: MainUiState, tokenManager: TokenManager?) {
         val savedAddress = uiState.apiAddress
         val savedPort = uiState.apiPort
-        val dynamicBaseUrl = "http://$savedAddress:$savedPort/"
+        val savedProtocol = uiState.useHttps
+        val dynamicBaseUrl = "http$savedProtocol://$savedAddress:$savedPort/"
 
         val baseOkHttpClient = OkHttpClient
             .Builder()

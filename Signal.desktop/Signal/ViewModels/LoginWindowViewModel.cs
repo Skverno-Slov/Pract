@@ -16,18 +16,19 @@ namespace Signal.ViewModels
     public partial class LoginWindowViewModel(LoginWindow window) : ViewModelBase
     {
         [ObservableProperty]
-        private string _login = string.Empty;
+        private string login = string.Empty;
 
         [ObservableProperty]
-        private string _password = string.Empty;
+        private string password = string.Empty;
 
         [ObservableProperty]
-        private string _errorMessage = string.Empty;
+        private string errorMessage = string.Empty;
 
         [RelayCommand]
         private void OpenSettings()
         {
-
+            var settingsWindow = new SettingsWindow() { DataContext = new SettingsWindowViewModel()};
+            settingsWindow.ShowDialog(window);
         }
 
         [RelayCommand]
@@ -57,5 +58,6 @@ namespace Signal.ViewModels
                 ErrorMessage = $"Ошибка подключения \n{ex.Message}";
             }
         }
+
     }
 }

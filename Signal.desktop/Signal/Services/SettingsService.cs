@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Signal.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -28,7 +29,6 @@ namespace Signal.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Ошибка сохранения настроек \n{ex.Message}");
             }
         }
         public static NetworkSettings Load()
@@ -43,7 +43,6 @@ namespace Signal.Services
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Ошибка загрузки настроек \n{ex.Message}");
                 return new NetworkSettings(); 
             }
         }

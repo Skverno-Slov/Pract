@@ -1,4 +1,5 @@
 ﻿using Signal.Dtos;
+using Signal.Models;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,9 +12,9 @@ namespace Signal.Services
 {
     public class ApiService
     {
-        const int clientTimeoutSeconds = 15;
+        const int ClientTimeoutSeconds = 15;
+        const string ApiName = "SignalTrack.Api";
         HttpClient client = new();
-        NetworkSettings settings = new();
 
         private static readonly Lazy<ApiService> instance =
         new Lazy<ApiService>(() => new ApiService());
@@ -25,49 +26,81 @@ namespace Signal.Services
             ConfigureClient();
         }
 
+        public async Task<bool> CheckConnectionAsync(Uri testUri)
+        {
+            try
+            {
+                var responce = await client.GetAsync(testUri);
+                var content = await responce.Content.ReadFromJsonAsync<PingResponce>();
+                return content.Service == ApiName;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task LogutAsync()
         {
-            await client.PostAsJsonAsync("api/auth/logout", SessionContext.RefreshToken);
+            try
+            {
+                await client.PostAsJsonAsync("api/auth/logout", SessionContext.RefreshToken);
+            }
+            catch { }
         }
 
         public async Task<bool> LoginAsync(string loign, string password)
         {
-            var request = new LoginRequest()
+            try
             {
-                Login = loign,
-                Password = password
-            };
-            var responce = await client.PostAsJsonAsync("api/auth/login", request);
-            var content = await responce.Content.ReadFromJsonAsync<TokenResponse>();
-            var result = responce.IsSuccessStatusCode;
-            if (result)
-            {
-                SessionContext.AccessToken = content.AccessToken;
-                SessionContext.RefreshToken = content.RefreshToken;
+                var request = new LoginRequest()
+                {
+                    Login = loign,
+                    Password = password
+                };
+                var responce = await client.PostAsJsonAsync("api/auth/login", request);
+                var content = await responce.Content.ReadFromJsonAsync<TokenResponse>();
+                var result = responce.IsSuccessStatusCode;
+                if (result)
+                {
+                    SessionContext.AccessToken = content.AccessToken;
+                    SessionContext.RefreshToken = content.RefreshToken;
+                }
+                return result;
             }
-            return result;
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<bool> RefreshTokensAsync()
         {
-            var responce = await client.PostAsJsonAsync("api/auth/refresh", SessionContext.RefreshToken);
-            var content = await responce.Content.ReadFromJsonAsync<TokenResponse>();
-            var result = responce.IsSuccessStatusCode;
-            if (result)
+            try
             {
-                SessionContext.AccessToken = content.AccessToken;
-                SessionContext.RefreshToken = content.RefreshToken;
+                var responce = await client.PostAsJsonAsync("api/auth/refresh", SessionContext.RefreshToken);
+                var content = await responce.Content.ReadFromJsonAsync<TokenResponse>();
+                var result = responce.IsSuccessStatusCode;
+                if (result)
+                {
+                    SessionContext.AccessToken = content.AccessToken;
+                    SessionContext.RefreshToken = content.RefreshToken;
+                }
+                return result;
             }
-            return result;
+            catch
+            {  
+                return false; 
+            }
         }
 
         private void ConfigureClient()
         {
-            var address = settings.Address;
-            var port = settings.Port;
+            var address = SettingsService.Load().Address;
+            var port = SettingsService.Load().Port;
 
             client.BaseAddress = new Uri($"https://{address}:{port}/");
-            client.Timeout = TimeSpan.FromSeconds(clientTimeoutSeconds);
+            client.Timeout = TimeSpan.FromSeconds(ClientTimeoutSeconds);
         }
     }
 }

@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="Signal.Server/Signal.Server.csproj" />
+  <Project Path="Signal.Test/Signal.Test.csproj" Id="e7a1f30e-2d91-4e55-adbd-46715beb112a" />
 </Solution>
