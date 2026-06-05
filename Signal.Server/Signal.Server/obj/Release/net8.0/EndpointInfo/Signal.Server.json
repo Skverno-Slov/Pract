@@ -656,6 +656,13 @@
           "lastName": {
             "type": "string",
             "nullable": true
+          },
+          "roleNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false

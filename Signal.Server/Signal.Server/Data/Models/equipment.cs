@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models.Models;
+namespace Signal.Server.Data.Models;
 
 [Table("equipment")]
 [Index("SerialNumber", Name = "equipment_serial_number_key", IsUnique = true)]
@@ -31,6 +31,10 @@ public partial class Equipment
 
     [Column("last_check_date")]
     public DateTime? LastCheckDate { get; set; }
+
+    [Column("ip_address")]
+    [StringLength(39)]
+    public string? IpAddress { get; set; }
 
     [InverseProperty("Equipment")]
     public virtual ICollection<ReadingLog> ReadingLogs { get; set; } = new List<ReadingLog>();

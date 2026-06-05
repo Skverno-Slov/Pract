@@ -8,5 +8,6 @@ namespace Signal.Services
     {
         public static string? AccessToken { get; set; }
         public static string? RefreshToken { get; set; }
+        public static string? FullName { get; set; }
     }
 }

@@ -216,7 +216,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             _uiState.update { it.copy(isGraphLoading = true) }
             try {
-                val points = api.getFullGraphData(deviceId, period)
+                val points = api.getFullGraphData(deviceId, period).onEach { point -> if(point.value == "n/a") point.value = null }
+
                 _uiState.update { currentState ->
                     currentState.copy(
                         isGraphLoading = false,
@@ -404,7 +405,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.FAILED) }
                 }
             } catch (e: Exception) {
-                Log.e("API_ERROR", e.message.toString())
                 _uiState.update { it.copy(isConnectionChecking = false, connectionStatus = ConnectionStatus.FAILED) }
             }
         }

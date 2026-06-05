@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Signal.ViewModels;
 
 namespace Signal.Views
 {
@@ -7,6 +8,7 @@ namespace Signal.Views
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainWindowViewModel(this);
         }
     }
 }

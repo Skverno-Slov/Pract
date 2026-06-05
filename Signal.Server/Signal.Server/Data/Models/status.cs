@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models.Models;
+namespace Signal.Server.Data.Models;
 
 [Table("status")]
 [Index("Name", Name = "status_name_key", IsUnique = true)]

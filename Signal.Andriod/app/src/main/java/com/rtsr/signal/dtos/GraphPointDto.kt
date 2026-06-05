@@ -3,6 +3,6 @@ package com.rtsr.signal.dtos
 
 data class GraphPointDto(
     val param: String,
-    val value: String,
+    var value: String?,
     val dt: String
 )

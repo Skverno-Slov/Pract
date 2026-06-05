@@ -40,3 +40,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/SettingsWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/UserDetailPage.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/UsersPage.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml

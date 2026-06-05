@@ -287,6 +287,22 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "Create",
+    "RelativePath": "api/equipment/logs",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "Signal.Server.Data.Dtos.CreateReadingLogDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "Signal.Server.Controllers.PingController",
     "Method": "Ping",
     "RelativePath": "api/ping",

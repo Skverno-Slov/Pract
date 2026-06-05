@@ -56,10 +56,6 @@ CREATE TABLE "reading_log" (
     "value" VARCHAR(50) NOT NULL 
 );
 
-ALTER TABLE "reading_type" 
-ADD COLUMN "min_value" NUMERIC(10, 2),
-ADD COLUMN "max_value" NUMERIC(10, 2);
-
 --Индексы
 CREATE INDEX idx_metrics_device_time 
 ON "reading_log" ("equipment_id", "write_date_time" DESC);
@@ -261,3 +257,5 @@ ORDER BY
 
 TRUNCATE TABLE "reading_log";
 
+ALTER TABLE "equipment"
+ADD COLUMN "ip_address" VARCHAR(39) null;

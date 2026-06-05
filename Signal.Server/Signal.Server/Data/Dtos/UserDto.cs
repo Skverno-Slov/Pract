@@ -8,6 +8,7 @@
         public string SecondName { get; set; } = null!;
         public string FirstName { get; set; } = null!;
         public string? LastName { get; set; }
+        public List<string> RoleNames { get; set; } = null!;
     }
 }
 

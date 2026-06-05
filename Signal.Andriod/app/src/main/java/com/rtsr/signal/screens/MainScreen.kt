@@ -383,24 +383,55 @@ fun DashboardScreen(
                             filteredPoints.map { it.dt }.distinct().sorted()
                         }
 
-                        LaunchedEffect(pointsByParam, xDateLabels) {
-                            if (pointsByParam.isNotEmpty() && xDateLabels.isNotEmpty()) {
-                                modelProducer.runTransaction {
-                                    lineSeries {
-                                        pointsByParam.forEach { (_, points) ->
-                                            series(
-                                                x = points.map {
-                                                    xDateLabels.indexOf(it.dt).toFloat()
-                                                },
-                                                y = points.map { it.value.toFloatOrNull() ?: 0f }
-                                            )
+                        val hasAnyNumericData = remember(pointsByParam) {
+                            pointsByParam.values.any { points ->
+                                points.any { it.value?.toFloatOrNull() != null }
+                            }
+                        }
+
+                        if (pointsByParam.isNotEmpty() && hasAnyNumericData) {
+                            LaunchedEffect(pointsByParam, xDateLabels) {
+                                if (pointsByParam.isNotEmpty() && xDateLabels.isNotEmpty()) {
+                                    modelProducer.runTransaction {
+                                        lineSeries {
+                                            pointsByParam.forEach { (_, points) ->
+                                                val segments =
+                                                    mutableListOf<MutableList<Pair<Float, Float>>>()
+                                                var currentSegment =
+                                                    mutableListOf<Pair<Float, Float>>()
+
+                                                points.forEach { point ->
+                                                    val xValue =
+                                                        xDateLabels.indexOf(point.dt).toFloat()
+                                                    val yValue = point.value?.toFloatOrNull()
+
+                                                    if (yValue != null && xValue >= 0) {
+                                                        currentSegment.add(xValue to yValue)
+                                                    } else {
+                                                        if (currentSegment.isNotEmpty()) {
+                                                            segments.add(currentSegment)
+                                                            currentSegment = mutableListOf()
+                                                        }
+                                                    }
+                                                }
+                                                if (currentSegment.isNotEmpty()) {
+                                                    segments.add(currentSegment)
+                                                }
+
+                                                segments.forEach { segment ->
+                                                    series(
+                                                        x = segment.map { it.first },
+                                                        y = segment.map { it.second }
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
 
-                        if (pointsByParam.isNotEmpty()) {
+                        if (pointsByParam.isNotEmpty() && hasAnyNumericData) {
 
                             val lineProvider = LineCartesianLayer.LineProvider.series(
                                 pointsByParam.keys.map { paramId ->
@@ -525,7 +556,7 @@ fun DashboardScreen(
                                 bottomAxis = HorizontalAxis.rememberBottom(
                                     label = rememberTextComponent(color = MaterialTheme.colorScheme.onBackground),
                                     labelRotationDegrees = 0f,
-                                    valueFormatter = {_, value, _ ->
+                                    valueFormatter = { _, value, _ ->
                                         val index = kotlin.math.round(value).toInt()
                                         val fullDateTime = xDateLabels.getOrNull(index) ?: ""
 
@@ -534,17 +565,32 @@ fun DashboardScreen(
                                         } else {
                                             try {
                                                 val instant = java.time.Instant.parse(fullDateTime)
-                                                val localDateTime = java.time.LocalDateTime.ofInstant(
-                                                    instant,
-                                                    java.time.ZoneId.systemDefault()
+                                                val localDateTime =
+                                                    java.time.LocalDateTime.ofInstant(
+                                                        instant,
+                                                        java.time.ZoneId.systemDefault()
+                                                    )
+                                                localDateTime.format(
+                                                    java.time.format.DateTimeFormatter.ofPattern(
+                                                        "yyyy.MM.dd"
+                                                    )
                                                 )
-                                                localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd"))
                                             } catch (_: Exception) {
                                                 try {
-                                                    val cleanFormat = fullDateTime.take(19).replace("T", " ")
-                                                    val inputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                                                    val outputFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy.MM.dd")
-                                                    java.time.LocalDateTime.parse(cleanFormat, inputFormatter).format(outputFormatter)
+                                                    val cleanFormat =
+                                                        fullDateTime.take(19).replace("T", " ")
+                                                    val inputFormatter =
+                                                        java.time.format.DateTimeFormatter.ofPattern(
+                                                            "yyyy-MM-dd HH:mm:ss"
+                                                        )
+                                                    val outputFormatter =
+                                                        java.time.format.DateTimeFormatter.ofPattern(
+                                                            "yyyy.MM.dd"
+                                                        )
+                                                    java.time.LocalDateTime.parse(
+                                                        cleanFormat,
+                                                        inputFormatter
+                                                    ).format(outputFormatter)
                                                 } catch (_: Exception) {
                                                     fullDateTime.take(10).replace("-", ".")
                                                 }
@@ -570,14 +616,51 @@ fun DashboardScreen(
                                     maxZoom = Zoom.fixed(8f)
                                 )
                             )
-                        } else {
-                            Box(
+                        } else if(pointsByParam.isNotEmpty()) {
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(280.dp),
-                                contentAlignment = Alignment.Center
+                                    .height(320.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
                             ) {
-                                Text(stringResource(R.string.err_graf_no_data), color = Color.Gray)
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.err_graph_unavalable),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else{
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(320.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = stringResource(R.string.err_graf_no_data),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
                     }

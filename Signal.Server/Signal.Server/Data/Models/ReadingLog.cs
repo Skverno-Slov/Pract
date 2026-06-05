@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace Signal.Server.Data.Models.Models;
+namespace Signal.Server.Data.Models;
 
 [Table("reading_log")]
 [Index("EquipmentId", "WriteDateTime", Name = "idx_metrics_device_time", IsDescending = new[] { false, true })]

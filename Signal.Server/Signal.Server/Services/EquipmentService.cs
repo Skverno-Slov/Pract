@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Signal.Server.Data;
 using Signal.Server.Data.Dtos;
-using Signal.Server.Data.Models.Models;
+using Signal.Server.Data.Models;
 
 namespace Signal.Server.Services
 {
@@ -119,6 +119,39 @@ namespace Signal.Server.Services
                     r.MaxValue
                 ))
                 .ToListAsync();
+        }
+
+        public async Task<ReadingLog> AddReadingLogAsync(CreateReadingLogDto dto)
+        {
+            var equipmentId = context.Equipment
+                .Where(e => e.IpAddress == dto.IpAddress) 
+                .Select(e => e.EquipmentId)
+                .FirstOrDefault();
+
+            if (equipmentId == 0)
+                throw new KeyNotFoundException($"Оборудование с IP {dto.IpAddress} не найдено.");
+
+            var readingTypeId = context.ReadingTypes
+                .Where(rt => rt.Identifier == dto.ReadingTypeIdentifier)
+                .Select(rt => rt.ReadingTypeId)
+                .FirstOrDefault();
+
+            if (readingTypeId == 0)
+                throw new KeyNotFoundException($"Тип записи '{dto.ReadingTypeIdentifier}' не найден.");
+
+            var newLog = new ReadingLog
+            {
+                EquipmentId = equipmentId,
+                ReadingTypeId = readingTypeId,
+                StatusId = 1,
+                Value = dto.Value,
+                WriteDateTime = DateTime.UtcNow 
+            };
+
+            context.ReadingLogs.Add(newLog);
+            context.SaveChanges();
+
+            return newLog;
         }
 
         private static void ApplyPeriod(string periodType, DateTime now, ref DateTime? startDate, ref DateTime? endDate)

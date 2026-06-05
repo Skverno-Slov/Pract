@@ -27,7 +27,7 @@ namespace Signal.ViewModels
         [RelayCommand]
         private void OpenSettings()
         {
-            var settingsWindow = new SettingsWindow() { DataContext = new SettingsWindowViewModel()};
+            var settingsWindow = new SettingsWindow();
             settingsWindow.ShowDialog(window);
         }
 
@@ -46,7 +46,7 @@ namespace Signal.ViewModels
             {
                 if (await ApiService.Instance.LoginAsync(Login, Password))
                 {
-                    var mainWindow = new MainWindow { DataContext = new MainWindowViewModel() };
+                    var mainWindow = new MainWindow();
                     mainWindow.Show();
                     window.Close();
                     return;

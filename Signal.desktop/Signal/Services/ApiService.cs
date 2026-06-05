@@ -1,6 +1,8 @@
 ﻿using Signal.Dtos;
 using Signal.Models;
+using Signal.Server.Data.Dtos;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -65,6 +67,7 @@ namespace Signal.Services
                 {
                     SessionContext.AccessToken = content.AccessToken;
                     SessionContext.RefreshToken = content.RefreshToken;
+                    SessionContext.FullName = $"{content.LastName} {content.FirstName} {content.MiddleName}";
                 }
                 return result;
             }
@@ -91,6 +94,30 @@ namespace Signal.Services
             catch
             {  
                 return false; 
+            }
+        }
+
+        public async Task<List<UserDto>?> GetUsersAsync()
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<List<UserDto>>("api/auth");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<UserDto?> GetUserAsync(int id)
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<UserDto>($"api/auth/{id}");
+            }
+            catch
+            {
+                return null;
             }
         }
 

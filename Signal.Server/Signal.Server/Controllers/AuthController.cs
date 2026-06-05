@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Signal.Server.Data.Dtos;
-using Signal.Server.Data.Models.Models;
 using Signal.Server.Services;
 using System.Security.Claims;
 using static Signal.Server.Services.AuthService;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Signal.Server.Data.Models.Models;
+using Signal.Server.Data.Models;
 
 namespace Signal.Server.Data;
 

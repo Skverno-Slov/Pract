@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Signal.Server.Data.Dtos;
-using Signal.Server.Data.Models.Models;
 using Signal.Server.Services;
 using System.Security.Claims;
 
@@ -40,6 +39,24 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
     {
         var devices = await equipmentService.GetAllEquipmentAsync();
         return Ok(devices);
+    }
+
+    [HttpPost("logs")]
+    public async Task<IActionResult> Create([FromBody] CreateReadingLogDto dto)
+    {
+        try
+        {
+            var result = await equipmentService.AddReadingLogAsync(dto);
+            return StatusCode(201, result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = "Внутренняя ошибка сервера", details = ex.Message });
+        }
     }
 
     [Authorize]

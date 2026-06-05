@@ -3,11 +3,8 @@ using Microsoft.IdentityModel.Tokens;
 using Signal.Server.Data;
 using Signal.Server.Data.Dtos;
 using Signal.Server.Data.Models;
-using Signal.Server.Data.Models.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using static System.Collections.Specialized.BitVector32;
 
 namespace Signal.Server.Services
 {
@@ -82,13 +79,15 @@ namespace Signal.Server.Services
         public async Task<List<UserDto>> GetUsersAsync()
         {
             return await context.Users
+                .Include(u => u.Roles)
                 .Select(u => new UserDto
                 {
                     UserId = u.UserId,
                     Login = u.Login,
                     FirstName = u.FirstName,
                     LastName = u.LastName,
-                    SecondName = u.SecondName
+                    SecondName = u.SecondName,
+                    RoleNames = u.Roles.Select(r => r.Name).ToList()
                 }).ToListAsync();
         }
 
