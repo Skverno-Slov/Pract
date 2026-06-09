@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diagram version="1" name="signal_track_db_diagram.erd">
+	<entities>
+		<data-source id="postgres-jdbc-19e3ee70a3f-368ca9b7f8d1e4f7">
+			<entity id="1" name="equipment" fq-name="public.equipment" order="0" color-bg="228,255,181" x="290" y="250">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="2" name="reading_log" fq-name="public.reading_log" order="1" color-bg="228,255,181" x="517" y="250">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="3" name="reading_type" fq-name="public.reading_type" order="2" color-bg="228,255,181" x="734" y="267">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="4" name="role" fq-name="public.&quot;role&quot;" order="3" color-bg="228,255,181" x="390" y="93">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="5" name="session" fq-name="public.&quot;session&quot;" order="4" color-bg="228,255,181" x="910" y="47">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="6" name="status" fq-name="public.status" order="5" color-bg="228,255,181" x="421" y="485">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="7" name="user" fq-name="public.&quot;user&quot;" order="6" color-bg="228,255,181" x="702" y="36">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+			<entity id="8" name="user_role" fq-name="public.user_role" order="7" color-bg="228,255,181" x="552" y="94">
+				<path name="public"/>
+				<path name="signal_track_db"/>
+			</entity>
+		</data-source>
+	</entities>
+	<relations>
+		<relation name="reading_log_equipment_id_fkey" fq-name="public.reading_log.reading_log_equipment_id_fkey" type="fk" pk-ref="1" fk-ref="2"/>
+		<relation name="reading_log_reading_type_id_fkey" fq-name="public.reading_log.reading_log_reading_type_id_fkey" type="fk" pk-ref="3" fk-ref="2"/>
+		<relation name="user_role_role_id_fkey" fq-name="public.user_role.user_role_role_id_fkey" type="fk" pk-ref="4" fk-ref="8"/>
+		<relation name="equipment_status_id_fkey" fq-name="public.equipment.equipment_status_id_fkey" type="fk" pk-ref="6" fk-ref="1"/>
+		<relation name="reading_log_status_id_fkey" fq-name="public.reading_log.reading_log_status_id_fkey" type="fk" pk-ref="6" fk-ref="2"/>
+		<relation name="session_user_id_fkey" fq-name="public.&quot;session&quot;.session_user_id_fkey" type="fk" pk-ref="7" fk-ref="5"/>
+		<relation name="user_role_user_id_fkey" fq-name="public.user_role.user_role_user_id_fkey" type="fk" pk-ref="7" fk-ref="8"/>
+	</relations>
+</diagram>

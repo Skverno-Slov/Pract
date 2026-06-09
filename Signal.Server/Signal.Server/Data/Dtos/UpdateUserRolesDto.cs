@@ -2,6 +2,6 @@
 {
     public class UpdateUserRolesDto
     {
-        public List<int> Roles { get; set; } = null!;
+        public List<string> Roles { get; set; } = null!;
     }
 }

@@ -80,13 +80,6 @@ object NetworkClient {
 
         val baseOkHttpClient = OkHttpClient
             .Builder()
-            .hostnameVerifier { hostname, session ->
-                val isTargetIp = hostname == savedAddress
-
-                val isLocalhostCert = session.peerPrincipal?.name?.contains("CN=localhost") == true
-
-                isTargetIp && isLocalhostCert
-            }
             .build()
 
         val baseRetrofit = Retrofit.Builder()

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Signal.Server.Data.Dtos
+namespace Signal.Dtos
 {
     public class UserDto
     {

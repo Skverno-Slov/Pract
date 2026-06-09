@@ -7,7 +7,7 @@
         x:Class="Signal.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Signal">
+        Title="Signal: Панель администратора">
 
 	<DockPanel LastChildFill="True">
 

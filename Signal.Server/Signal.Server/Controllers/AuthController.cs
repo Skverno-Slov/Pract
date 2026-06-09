@@ -13,6 +13,7 @@ public class AuthController(AuthService authService) : ControllerBase
 {
     private readonly AuthService authService = authService;
 
+    [Authorize(Roles = "Администратор")]
     [HttpGet("{id}")]
     public async Task<ActionResult<UserDto>> GetUserAsync(int id)
     {
@@ -22,10 +23,18 @@ public class AuthController(AuthService authService) : ControllerBase
         return Ok(user);
     }
 
+    [Authorize]
     [HttpGet]
-    public async Task<ActionResult<List<UserDto>>> GetUsersAsync()
+    public async Task<ActionResult<UsersResponce>> GetUsersAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        return await authService.GetUsersAsync();
+        return await authService.GetUsersAsync(page, pageSize);
+    }
+
+    [Authorize(Roles = "Администратор")]
+    [HttpGet("roles")]
+    public async Task<ActionResult<List<string>>> GetRolesAsync()
+    {
+        return await authService.GetRolesAsync();
     }
 
     [HttpPost("login")]
@@ -57,9 +66,9 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest payload)
+    public async Task<IActionResult> Register([FromBody] RegisterRequest dto)
     {
-        var result = await authService.RegisterUserAsync(payload);
+        var result = await authService.RegisterUserAsync(dto);
         if (!result)
         {
             return BadRequest(new { detail = "Ошибка авторизации" });
@@ -67,6 +76,7 @@ public class AuthController(AuthService authService) : ControllerBase
         return StatusCode(201, new { message = "Пользователь успешно зарегистрирован" });
     }
 
+    [Authorize(Roles = "Администратор")]
     [HttpPost("{id}/reset-password")]
     public async Task<IActionResult> ResetPassword(int id, [FromBody] string newPassworrd)
     {
@@ -84,8 +94,9 @@ public class AuthController(AuthService authService) : ControllerBase
         return Ok(new { message = "Пароль пользователя успешно изменен" });
     }
 
+    [Authorize(Roles = "Администратор")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UserDto dto)
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto dto)
     {
         try
         {
@@ -100,8 +111,9 @@ public class AuthController(AuthService authService) : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Администратор")]
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> DeleteUser(int id)
     {
         var result = await authService.DeleteUserAsync(id);
         if (!result) return NotFound(new { message = "Пользователь не найден" });
@@ -109,6 +121,7 @@ public class AuthController(AuthService authService) : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Администратор")]
     [HttpPut("{id:int}/roles")]
     public async Task<IActionResult> UpdateRoles(int id, [FromBody] UpdateUserRolesDto dto)
     {

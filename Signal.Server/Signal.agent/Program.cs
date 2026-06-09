@@ -38,14 +38,9 @@ class Program
     }
 }
 
-public class NetworkPollingService : BackgroundService
+public class NetworkPollingService(HttpClient httpClient) : BackgroundService
 {
-    private readonly HttpClient _httpClient; 
-
-    public NetworkPollingService(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
+    private readonly HttpClient _httpClient = httpClient;
 
     async Task<List<DeviceConfig>> GetConfigurationsAsync()
     {

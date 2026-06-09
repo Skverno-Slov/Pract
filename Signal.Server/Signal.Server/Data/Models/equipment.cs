@@ -29,9 +29,6 @@ public partial class Equipment
     [StringLength(100)]
     public string Model { get; set; } = null!;
 
-    [Column("last_check_date")]
-    public DateTime? LastCheckDate { get; set; }
-
     [Column("ip_address")]
     [StringLength(39)]
     public string? IpAddress { get; set; }

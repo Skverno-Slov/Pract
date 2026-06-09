@@ -35,12 +35,13 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
 
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetDevices()
+    public async Task<IActionResult> GetEquipment()
     {
-        var devices = await equipmentService.GetAllEquipmentAsync();
+        var devices = await equipmentService.GetEquipmentAsync();
         return Ok(devices);
     }
 
+    [Authorize]
     [HttpPost("logs")]
     public async Task<IActionResult> Create([FromBody] CreateReadingLogDto dto)
     {
@@ -53,9 +54,9 @@ public class EquipmentController(EquipmentService equipmentService) : Controller
         {
             return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch
         {
-            return StatusCode(500, new { message = "Внутренняя ошибка сервера", details = ex.Message });
+            return BadRequest();
         }
     }
 

@@ -1,25 +1,89 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using Signal.Server.Data.Dtos;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Signal.Dtos;
+using Signal.Models;
 using Signal.Services;
+using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Signal.ViewModels
 {
-    public partial class UsersPageViewModel : ViewModelBase
+    public partial class UsersPageViewModel(ApiService apiService) : ViewModelBase
     {
-        public ObservableCollection<UserDto> Users { get; } = new();
+        const int PageSize = 10;
+
+        private readonly ApiService userService = apiService;
+
+        public ObservableCollection<UserDto> Users { get; set; } = new();
+
+        [ObservableProperty]
+        int currentPage = 1;
+        [ObservableProperty]
+        int totalPages = 1;
+        [ObservableProperty]
+        int totalUsers;
 
         [RelayCommand]
-        async Task UpdateDataAsync()
+        public async Task LoadUsersAsync()
         {
-            await ApiService.Instance.GetUsersAsync();
+            var response = await userService.GetUsersAsync(CurrentPage);
+
+            if (response != null)
+            {
+                Users.Clear();
+                foreach (var user in response.Users)
+                {
+                    Users.Add(user);
+                }
+                TotalUsers = response.TotalUsers;
+                TotalPages = (int)Math.Ceiling((double)TotalUsers / PageSize);
+            }
+            NextPageCommand.NotifyCanExecuteChanged();
+            PrevPageCommand.NotifyCanExecuteChanged();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoNextPage))]
+        async Task NextPageAsync()
+        {
+            CurrentPage++;
+            await LoadUsersAsync();
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoPrewPage))]
+        async Task PrevPageAsync()
+        {
+            CurrentPage--;
+            await LoadUsersAsync();
         }
 
         [RelayCommand]
-        void OpenDetail()
+        async Task EditUserAsync(UserDto? user)
         {
-
+            if (user is null) return;
+            MainViewModelHandler.Instance.CurrentPage = new UserRedactorPage(user);
+            await LoadUsersAsync();
         }
+
+        [RelayCommand]
+        async Task DeleteUserAsync(UserDto? user)
+        {
+            if (user is null) return;
+            var result = await userService.DeleteUserAsync(user.UserId);
+            if (result) await LoadUsersAsync();
+        }
+
+        [RelayCommand]
+        async Task AddUserAsync()
+        {
+            MainViewModelHandler.Instance.CurrentPage = new UserRedactorPage();
+            await LoadUsersAsync();
+        }
+
+        bool CanGoNextPage()
+            => CurrentPage < TotalPages;
+
+        bool CanGoPrewPage()
+            => CurrentPage > 1;
     }
 }

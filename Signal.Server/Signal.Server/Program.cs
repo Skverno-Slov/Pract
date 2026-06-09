@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using Signal.Server;
 using Signal.Server.Data;
 using Signal.Server.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,8 +27,6 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false; 
-    options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
@@ -36,7 +36,9 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = AuthOptions.validAudience,
 
         ValidateLifetime = true,  
-        ClockSkew = TimeSpan.Zero 
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = JwtRegisteredClaimNames.Sub,
+        RoleClaimType = ClaimTypes.Role
     };
 });
 

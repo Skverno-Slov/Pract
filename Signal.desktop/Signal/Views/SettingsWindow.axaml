@@ -6,7 +6,8 @@
         x:Class="Signal.Views.SettingsWindow"
 		xmlns:vm="using:Signal.ViewModels"
 		x:DataType="vm:SettingsWindowViewModel"
-        Title="SettingsWindow">
+		Icon="/Assets/avalonia-logo.ico"
+        Title="Signal: Панель администратора / Настройки">
 	<Grid RowDefinitions="Auto, Auto, *, Auto" Margin="20">
 		<StackPanel Grid.Row="0" Spacing="15">
 			<StackPanel>

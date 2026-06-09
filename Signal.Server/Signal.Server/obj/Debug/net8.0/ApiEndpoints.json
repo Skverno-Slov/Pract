@@ -6,10 +6,21 @@
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.List\u00601[[Signal.Server.Data.Dtos.UserDto, Signal.Server, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "Signal.Server.Data.Dtos.UsersResponce",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -47,7 +58,7 @@
   },
   {
     "ContainingType": "SignalTrack.Api.Controllers.AuthController",
-    "Method": "Update",
+    "Method": "UpdateUser",
     "RelativePath": "api/auth/{id}",
     "HttpMethod": "PUT",
     "IsController": true,
@@ -68,7 +79,7 @@
   },
   {
     "ContainingType": "SignalTrack.Api.Controllers.AuthController",
-    "Method": "Delete",
+    "Method": "DeleteUser",
     "RelativePath": "api/auth/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
@@ -186,7 +197,7 @@
     "Order": 0,
     "Parameters": [
       {
-        "Name": "payload",
+        "Name": "dto",
         "Type": "Signal.Server.Data.Dtos.RegisterRequest",
         "IsRequired": true
       }
@@ -194,8 +205,28 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "SignalTrack.Api.Controllers.AuthController",
+    "Method": "GetRolesAsync",
+    "RelativePath": "api/auth/roles",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
-    "Method": "GetDevices",
+    "Method": "GetEquipment",
     "RelativePath": "api/equipment",
     "HttpMethod": "GET",
     "IsController": true,

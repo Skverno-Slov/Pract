@@ -57,20 +57,38 @@ namespace Signal.Server.Services
             return new PagedLogsResponse(logs, availableIdentifiers, totalCount);
         }
 
-        public async Task<List<EquipmentResponse>> GetAllEquipmentAsync()
+        public async Task<List<EquipmentDto>> GetEquipmentAsync()
         {
             return await context.Equipment
                 .OrderBy(e => e.Model) 
                 .ThenBy(e => e.Name)
-                .Select(e => new EquipmentResponse(
+                .Select(e => new EquipmentDto(
                     e.EquipmentId,
                     e.SerialNumber,
                     e.Name,
                     e.Model,
-                    e.Status.Name, 
-                    e.LastCheckDate
-                ))
-                .ToListAsync();
+                    e.Status.Name
+                )).ToListAsync();
+        }
+
+        public async Task<EquipmentResponce> GetEquipmentAsync(int page = 1, int pageSize = 10)
+        {
+            var equipmentCount = context.Equipment.Count();
+            var equipment = await context.Equipment
+                .OrderBy(e => e.Model)
+                .ThenBy(e => e.Name)
+                .Select(e => new EquipmentDto(
+                    e.EquipmentId,
+                    e.SerialNumber,
+                    e.Name,
+                    e.Model,
+                    e.Status.Name
+                )).Skip(pageSize * (page - 1)).Take(pageSize).ToListAsync();
+            return new EquipmentResponce()
+            {
+                Equipment = equipment,
+                TotalEquipment = equipmentCount
+            };
         }
 
         public async Task<List<GraphPointResponse>> GetFullGraphDataAsync(string serialNumber, string periodType)
@@ -113,7 +131,7 @@ namespace Signal.Server.Services
                     r.Label ?? "",
                     r.Value ?? "",
                     r.Unit,
-                    r.Status ?? "OK",
+                    r.Status ?? "ok",
                     r.Datetime,
                     r.MinValue,
                     r.MaxValue
@@ -128,16 +146,44 @@ namespace Signal.Server.Services
                 .Select(e => e.EquipmentId)
                 .FirstOrDefault();
 
-            if (equipmentId == 0)
-                throw new KeyNotFoundException($"Оборудование с IP {dto.IpAddress} не найдено.");
+            var equipmentExists = equipmentId != 0;
+
+            if (!equipmentExists)
+            {
+                var status = await context.Statuses.FirstOrDefaultAsync(s => s.Name.ToLower() == "ok");
+                if (status is null)
+                    throw new InvalidDataException("Статус Ok не найден");
+
+                var equipment = new Equipment()
+                {
+                    StatusId = status.StatusId,
+                    IpAddress = dto.IpAddress,
+                    SerialNumber = Guid.NewGuid().ToString(),
+                    Name = "New Equipment",
+                    Model = "Other"
+                };
+
+                await context.Equipment.AddAsync(equipment);
+                await context.SaveChangesAsync();
+            }
 
             var readingTypeId = context.ReadingTypes
                 .Where(rt => rt.Identifier == dto.ReadingTypeIdentifier)
                 .Select(rt => rt.ReadingTypeId)
                 .FirstOrDefault();
 
-            if (readingTypeId == 0)
-                throw new KeyNotFoundException($"Тип записи '{dto.ReadingTypeIdentifier}' не найден.");
+            var readingTypeExists = readingTypeId != 0;
+
+            if (!readingTypeExists)
+            {
+                var readingType = new ReadingType()
+                {
+                    Identifier = dto.ReadingTypeIdentifier,
+                    Name = dto.ReadingTypeIdentifier
+                };
+                await context.ReadingTypes.AddAsync(readingType);
+                await context.SaveChangesAsync();
+            }
 
             var newLog = new ReadingLog
             {
@@ -145,11 +191,27 @@ namespace Signal.Server.Services
                 ReadingTypeId = readingTypeId,
                 StatusId = 1,
                 Value = dto.Value,
-                WriteDateTime = DateTime.UtcNow 
+                WriteDateTime = DateTime.UtcNow
             };
 
-            context.ReadingLogs.Add(newLog);
-            context.SaveChanges();
+            if (!readingTypeExists)
+            {
+                var readingType = await context.ReadingTypes.FirstOrDefaultAsync(r => r.Identifier == dto.ReadingTypeIdentifier);
+                if (readingType is null)
+                    throw new InvalidDataException("Тип показания не найден");
+                newLog.ReadingTypeId = readingType.ReadingTypeId;
+            }
+
+            if (!readingTypeExists)
+            {
+                var equipment = await context.Equipment.FirstOrDefaultAsync(r => r.IpAddress == dto.IpAddress);
+                if (equipment is null)
+                    throw new InvalidDataException("Оборудование не найдено");
+                newLog.EquipmentId = equipment.EquipmentId;
+            }
+
+            await context.ReadingLogs.AddAsync(newLog);
+            await context.SaveChangesAsync();
 
             return newLog;
         }

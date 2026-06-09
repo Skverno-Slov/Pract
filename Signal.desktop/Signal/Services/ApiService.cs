@@ -1,13 +1,8 @@
 ﻿using Signal.Dtos;
-using Signal.Models;
-using Signal.Server.Data.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Signal.Services
@@ -16,7 +11,7 @@ namespace Signal.Services
     {
         const int ClientTimeoutSeconds = 15;
         const string ApiName = "SignalTrack.Api";
-        HttpClient client = new();
+        HttpClient client;
 
         private static readonly Lazy<ApiService> instance =
         new Lazy<ApiService>(() => new ApiService());
@@ -92,16 +87,16 @@ namespace Signal.Services
                 return result;
             }
             catch
-            {  
-                return false; 
+            {
+                return false;
             }
         }
 
-        public async Task<List<UserDto>?> GetUsersAsync()
+        public async Task<UsersResponce?> GetUsersAsync(int page)
         {
             try
             {
-                return await client.GetFromJsonAsync<List<UserDto>>("api/auth");
+                return await client.GetFromJsonAsync<UsersResponce>($"api/auth?page={page}");
             }
             catch
             {
@@ -121,10 +116,95 @@ namespace Signal.Services
             }
         }
 
-        private void ConfigureClient()
+        public async Task<bool> DeleteUserAsync(int id)
+        {
+            try
+            {
+                var result = await client.DeleteAsync($"api/auth/{id}");
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateUserAsync(int id, UserDto dto)
+        {
+            try
+            {
+                var result = await client.PutAsJsonAsync($"api/auth/{id}", dto);
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateUserRolesAsync(int id, UpdateUserRolesDto dto)
+        {
+            try
+            {
+                var result = await client.PutAsJsonAsync($"api/auth/{id}/roles", dto);
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ResetUserPasswordAsync(int id, string newPassword)
+        {
+            try
+            {
+                var result = await client.PostAsJsonAsync($"api/auth/{id}/reset-password", newPassword);
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<List<string>?> GetRolesAsync()
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<List<string>>($"api/auth/roles");
+            }
+            catch
+            {
+                return new List<string>();
+            }
+        }
+
+        public async Task<bool> AddUserAsync(RegisterRequest dto)
+        {
+            try
+            {
+                var result = await client.PostAsJsonAsync($"api/auth/register", dto);
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        void ConfigureClient()
         {
             var address = SettingsService.Load().Address;
             var port = SettingsService.Load().Port;
+
+            var rootHandler = new HttpClientHandler();
+
+            var authHandler = new AuthTokenHandler(this);
+
+            authHandler.InnerHandler = rootHandler;
+
+            client = new HttpClient(authHandler);
 
             client.BaseAddress = new Uri($"https://{address}:{port}/");
             client.Timeout = TimeSpan.FromSeconds(ClientTimeoutSeconds);

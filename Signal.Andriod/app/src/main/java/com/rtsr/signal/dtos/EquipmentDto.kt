@@ -5,6 +5,5 @@ data class EquipmentDto(
     val serialNumber: String,
     val name: String,
     val model: String,
-    val statusName: String,
-    val lastCheckDate: String?
+    val statusName: String
 )

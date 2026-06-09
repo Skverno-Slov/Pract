@@ -10,14 +10,9 @@ using System.Threading.Tasks;
 
 namespace Signal.Services
 {
-    public class AuthTokenHandler : DelegatingHandler
+    public class AuthTokenHandler(ApiService authService) : DelegatingHandler
     {
-        private readonly ApiService apiService;
-
-        public AuthTokenHandler(ApiService authService)
-        {
-            apiService = authService;
-        }
+        private readonly ApiService apiService = authService;
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {

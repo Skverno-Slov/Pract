@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Signal.agent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5d1f26360dcc0c8559fb09c7ce95dc8a141246b6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4661c85f4cba652cf027dc7d820331ce30b86d79")]
 [assembly: System.Reflection.AssemblyProductAttribute("Signal.agent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Signal.agent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,8 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Signal.Server.Data;
 using Signal.Server.Data.Dtos;
 using Signal.Server.Data.Models;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -18,7 +21,7 @@ namespace Signal.Server.Services
             => BCrypt.Net.BCrypt.Verify(inputPassword, hashedPassword);
 
         public string HashPassword(string password)
-            => BCrypt.Net.BCrypt.HashPassword(password, workFactor: 11);
+            => BCrypt.Net.BCrypt.HashPassword(password, AuthOptions.workFactor);
 
         public TokenResponse GenerateJwtTokens(int userId,
                                                string? first,
@@ -28,9 +31,21 @@ namespace Signal.Server.Services
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString())
+            };
+
+            var roleNames = new List<string>();
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role.Name));
+                roleNames.Add(role.Name);
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity([new Claim(JwtRegisteredClaimNames.Sub, userId.ToString())]),
+                Subject = new ClaimsIdentity(claims, "Bearer"),
                 Expires = DateTime.UtcNow.AddMinutes(15),
                 Issuer = AuthOptions.validIssuer,
                 Audience = AuthOptions.validAudience,
@@ -47,13 +62,6 @@ namespace Signal.Server.Services
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), AuthOptions.algorithm)
             };
             var refreshToken = tokenHandler.CreateToken(refreshDescriptor);
-
-            var roleNames = new List<string>();
-
-            foreach (var role in roles)
-            {
-                roleNames.Add(role.Name);
-            }
 
             return new TokenResponse(
                 tokenHandler.WriteToken(accessToken),
@@ -76,9 +84,10 @@ namespace Signal.Server.Services
                 }).FirstOrDefaultAsync();
         }
 
-        public async Task<List<UserDto>> GetUsersAsync()
+        public async Task<UsersResponce> GetUsersAsync(int page, int pageSize)
         {
-            return await context.Users
+            var usersCount = context.Users.Count();
+            var users = await context.Users
                 .Include(u => u.Roles)
                 .Select(u => new UserDto
                 {
@@ -88,12 +97,18 @@ namespace Signal.Server.Services
                     LastName = u.LastName,
                     SecondName = u.SecondName,
                     RoleNames = u.Roles.Select(r => r.Name).ToList()
-                }).ToListAsync();
+                }).Skip(pageSize * (page-1)).Take(pageSize).ToListAsync();
+
+            return new UsersResponce()
+            {
+                Users = users,
+                TotalUsers = usersCount
+            };
         }
 
         public async Task<TokenResponse?> AuthenticateUserAsync(string login, string passwordRaw, string deviceName)
         {
-            var user = await context.Users.FirstOrDefaultAsync(u => u.Login == login);
+            var user = await context.Users.Include(r => r.Roles).FirstOrDefaultAsync(u => u.Login == login);
             if (user is null || !VerifyPassword(passwordRaw, user.HashedPassword))
             {
                 return null;
@@ -109,8 +124,15 @@ namespace Signal.Server.Services
                 SessionEndDateTime = DateTime.UtcNow.AddDays(3)
             };
 
-            context.Sessions.Add(session);
-            await context.SaveChangesAsync();
+            try
+            {
+                context.Sessions.Add(session);
+                await context.SaveChangesAsync();
+            }
+            catch 
+            {
+                Console.WriteLine($"Ошибка добавления сесии для {session.UserId}");
+            }
 
             return tokens;
         }
@@ -169,16 +191,22 @@ namespace Signal.Server.Services
             return false;
         }
 
-        public async Task<bool> RegisterUserAsync(RegisterRequest data)
+        public async Task<bool> RegisterUserAsync(RegisterRequest dto)
         {
-            var hashedPwd = HashPassword(data.HashedPassword);
+            var hashedPwd = HashPassword(dto.HashedPassword);
 
             try
             {
-                await context.Database.ExecuteSqlRawAsync(
-                    "CALL create_new_user({0}, {1}, {2}, {3}, {4}, {5})",
-                    data.Login, hashedPwd, data.FirstName, data.LastName, data.MiddleName, data.Role
-                );
+                context.Users.Add(new User()
+                {
+                    Login = dto.Login,
+                    HashedPassword = hashedPwd,
+                    FirstName = dto.FirstName,
+                    SecondName = dto.SecondName,
+                    LastName = dto.LastName,
+                    Roles = context.Roles.Where(r => r.Name == "Инженер").ToList()
+                });
+                await context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -204,8 +232,15 @@ namespace Signal.Server.Services
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
 
-            await context.SaveChangesAsync();
-            return true;
+            try
+            {
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
 
@@ -223,7 +258,7 @@ namespace Signal.Server.Services
                 await context.SaveChangesAsync();
                 return true;
             }
-            catch (DbUpdateConcurrencyException)
+            catch
             {
                 return false;
             }
@@ -235,12 +270,19 @@ namespace Signal.Server.Services
             var user = await context.Users.FindAsync(id);
             if (user is null) return false;
 
-            context.Users.Remove(user);
-            await context.SaveChangesAsync();
-            return true;
+            try
+            {
+                context.Users.Remove(user);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
-        public async Task<bool> UpdateUserRolesAsync(int userId, List<int> newRoleIds)
+        public async Task<bool> UpdateUserRolesAsync(int userId, List<string> newRoles)
         {
             var user = await context.Users
                 .Include(u => u.Roles)
@@ -250,10 +292,20 @@ namespace Signal.Server.Services
 
             user.Roles.Clear();
 
-            if (newRoleIds is not null && newRoleIds.Count > 0)
+            var roles = await context.Roles.ToListAsync();
+
+            var roleIds = new List<int>();
+            foreach (var role in newRoles)
+            {
+                var roleId = roles.FirstOrDefault(r => r.Name == role).RoleId;
+                if (roleId != 0)
+                    roleIds.Add(roleId);
+            }
+
+            if (newRoles is not null && newRoles.Count > 0)
             {
                 var rolesToAdd = await context.Roles
-                    .Where(r => newRoleIds.Contains(r.RoleId))
+                    .Where(r => roleIds.Contains(r.RoleId))
                     .ToListAsync();
 
                 foreach (var role in rolesToAdd)
@@ -266,6 +318,18 @@ namespace Signal.Server.Services
             await context.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<ActionResult<List<string>>> GetRolesAsync()
+        {
+            var roles = await context.Roles.ToListAsync();
+            if (roles is null) return new List<string>();
+
+            var roleNames = new List<string>();
+            foreach (var role in roles)
+                roleNames.Add(role.Name);
+
+            return roleNames;
         }
     }
 }
