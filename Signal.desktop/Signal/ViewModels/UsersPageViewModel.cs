@@ -60,7 +60,8 @@ namespace Signal.ViewModels
         [RelayCommand]
         async Task EditUserAsync(UserDto? user)
         {
-            if (user is null) return;
+            if (user is null) 
+                return;
             MainViewModelHandler.Instance.CurrentPage = new UserRedactorPage(user);
             await LoadUsersAsync();
         }

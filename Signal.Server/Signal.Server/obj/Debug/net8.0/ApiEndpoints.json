@@ -236,6 +236,43 @@
   },
   {
     "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "DeleteEquipment",
+    "RelativePath": "api/equipment/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "UpdateEquipment",
+    "RelativePath": "api/equipment/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Signal.Server.Data.Dtos.EquipmentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
     "Method": "GetGraphData",
     "RelativePath": "api/equipment/{serialNumber}/graph",
     "HttpMethod": "GET",
@@ -319,6 +356,27 @@
   },
   {
     "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "GetEquipment",
+    "RelativePath": "api/equipment/admin-panel",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
     "Method": "Create",
     "RelativePath": "api/equipment/logs",
     "HttpMethod": "POST",
@@ -328,6 +386,64 @@
       {
         "Name": "dto",
         "Type": "Signal.Server.Data.Dtos.CreateReadingLogDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "GetReadingTypes",
+    "RelativePath": "api/equipment/reading-types",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "DeleteReadingType",
+    "RelativePath": "api/equipment/reading-types/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SignalTrack.Api.Controllers.EquipmentController",
+    "Method": "UpdateReadingType",
+    "RelativePath": "api/equipment/reading-types/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "Signal.Server.Data.Dtos.ReadingTypeDto",
         "IsRequired": true
       }
     ],

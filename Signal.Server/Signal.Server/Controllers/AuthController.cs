@@ -112,7 +112,7 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     [Authorize(Roles = "Администратор")]
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
         var result = await authService.DeleteUserAsync(id);
@@ -122,7 +122,7 @@ public class AuthController(AuthService authService) : ControllerBase
     }
 
     [Authorize(Roles = "Администратор")]
-    [HttpPut("{id:int}/roles")]
+    [HttpPut("{id}/roles")]
     public async Task<IActionResult> UpdateRoles(int id, [FromBody] UpdateUserRolesDto dto)
     {
         if (dto.Roles is null)

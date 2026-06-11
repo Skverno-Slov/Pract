@@ -147,6 +147,11 @@ FOR EACH STATEMENT
 EXECUTE FUNCTION clean_old_reading_logs();
 
 --Представление
+CREATE OR REPLACE VIEW view_new_equipment AS
+SELECT *
+FROM equipment
+WHERE name = 'New Equipment';
+
 CREATE OR REPLACE VIEW view_latest_equipment_readings AS 
 WITH ranked_readings AS ( 
     SELECT 
@@ -177,7 +182,18 @@ JOIN reading_type rt ON rr.reading_type_id = rt.reading_type_id
 JOIN status st ON rr.status_id = st.status_id 
 WHERE rr.rn = 1;
 
---Процедура
+--Процедуры
+CREATE OR REPLACE FUNCTION get_equipment_logs(p_id INT) 
+-- возврат таблицы из id лога даты записи, значения, id статуса
+RETURNS TABLE ("reading_log_id" INT, "write_date_time" TIMESTAMPTZ, "value" VARCHAR(50), "status_id" INT) AS $$ 
+-- выборка id лога даты записи, значения, id статуса с id=p_id
+    SELECT "reading_log_id", "write_date_time", "value", "status_id" 
+    FROM "reading_log" 
+    WHERE "equipment_id" = p_id;
+$$ LANGUAGE sql;
+
+SELECT * FROM get_equipment_logs(8);
+
 CREATE OR REPLACE PROCEDURE create_new_user(
     p_login VARCHAR(20),
     p_hashed_password VARCHAR(255),
@@ -225,6 +241,8 @@ CALL create_new_user(
 );
 --Запросы
 
+SELECT * FROM get_equipment_logs(8);
+select * from view_new_equipment;
 select * from view_latest_equipment_readings;
 select * from "session" 
 select * from "user" 
@@ -234,6 +252,13 @@ select * from "reading_type"
 select * from "equipment"
 select * from "status"
 select * from "user_role"
+
+INSERT INTO public.reading_log
+(equipment_id, status_id, reading_type_id, value)
+VALUES
+	 (8, 1, 11, '20.6'),
+	 (8, 1, 12, 'ON');
+
 
 INSERT INTO "reading_log" (
     "equipment_id", 

@@ -42,11 +42,20 @@
 			<SplitView.Pane>
 				<Border BorderThickness="0,0,1,0">
 					<StackPanel Spacing="5" Margin="5,10">
+						<Button Content="Пользователи"
+                                Command="{Binding OpenUsersPageCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+						<Button Content="Оборудование"
+                                Command="{Binding OpenEquipmentPageCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+						<Button Content="Типы показаний"
+                                Command="{Binding OpenReadingTypePageCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
+						<Button Content="Конфигурация агента"
+                                Command="{Binding OpenJsonConfigPageCommand}"
+                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
 						<Button Content="Настройки"
                                 Command="{Binding OpenSettingsCommand}"
-                                HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
-						<Button Content="Сообщить о проблеме"
-                                IsEnabled="False"
                                 HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"/>
 						<Separator Margin="0,5"/>
 						<Button Content="Выход"

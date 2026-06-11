@@ -38,6 +38,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/EquipmentRedactorPage.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
+[C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/JsonConfigPage.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/LoginWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
@@ -45,6 +48,9 @@ build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/ReadingTypeRedactorPage.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/ReadingTypesPage.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
 [C:/Users/THUNDER/Documents/Pract/Signal.desktop/Signal/Views/SessionsPage.axaml]

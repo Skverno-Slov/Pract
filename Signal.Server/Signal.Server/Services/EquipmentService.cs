@@ -216,6 +216,120 @@ namespace Signal.Server.Services
             return newLog;
         }
 
+        public async Task<bool> DeleteEquipmentAsync(int id)
+        {
+            var equipment = await context.Equipment.FindAsync(id);
+            if (equipment is null) 
+                return false;
+
+            try
+            {
+                context.Equipment.Remove(equipment);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateEquipmentAsync(int id, EquipmentDto dto)
+        {
+            var equipment = await context.Equipment.FindAsync(id);
+            if (equipment is null) 
+                return false;
+
+            if (equipment.SerialNumber != dto.SerialNumber)
+            {
+                bool loginExists = await context.Equipment.AnyAsync(u => u.SerialNumber == dto.SerialNumber);
+                if (loginExists) throw new InvalidOperationException("Серийный номер уже занят");
+            }
+
+            equipment.SerialNumber = dto.SerialNumber;
+            equipment.Name = dto.Name;
+            equipment.Model = dto.Model;
+            var status = await context.Statuses.FirstOrDefaultAsync(s => s.Name == dto.StatusName);
+            if (status is not null)
+                equipment.StatusId = status.StatusId;
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<ReadingTypeResponce> GetReadingTypesAsync(int page, int pageSize)
+        {
+            var readingTypeCount = context.ReadingTypes.Count();
+            var readingTypes = await context.ReadingTypes
+                .Select(rt => new ReadingTypeDto() { 
+                    ReadingTypeId = rt.ReadingTypeId,
+                    Name = rt.Name,
+                    Identifier = rt.Identifier,
+                    Unit = rt.Unit,
+                    MinValue = rt.MinValue,
+                    MaxValue = rt.MaxValue
+                }).Skip(pageSize * (page - 1)).Take(pageSize).ToListAsync();
+            return new ReadingTypeResponce()
+            {
+                ReadingTypes = readingTypes,
+                TotalReadingTypes = readingTypeCount
+            };
+        }
+
+        public async Task<bool> DeleteReadingTypeAsync(int id)
+        {
+            var readingType = await context.ReadingTypes.FindAsync(id);
+            if (readingType is null)
+                return false;
+
+            try
+            {
+                context.ReadingTypes.Remove(readingType);
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateReadingTypeAsync(int id, ReadingTypeDto dto)
+        {
+            var readingType = await context.ReadingTypes.FindAsync(id);
+            if (readingType is null)
+                return false;
+
+            if (readingType.Identifier != dto.Identifier)
+            {
+                bool loginExists = await context.ReadingTypes.AnyAsync(u => u.Identifier == dto.Identifier);
+                if (loginExists) throw new InvalidOperationException("Идентификатор уже занят");
+            }
+
+            readingType.Identifier = dto.Identifier;
+            readingType.Name = dto.Name;
+            readingType.Unit = dto.Unit;
+            readingType.MinValue = dto.MinValue;
+            readingType.MaxValue = dto.MaxValue;
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private static void ApplyPeriod(string periodType, DateTime now, ref DateTime? startDate, ref DateTime? endDate)
         {
             switch (periodType.ToUpper())

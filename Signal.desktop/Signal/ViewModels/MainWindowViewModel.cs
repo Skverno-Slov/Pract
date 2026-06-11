@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Signal.Models;
 using Signal.Services;
 using Signal.Views;
 using System;
@@ -50,6 +51,30 @@ namespace Signal.ViewModels
             var settingsWindow = new SettingsWindow();
 
             await settingsWindow.ShowDialog(currentWindow);
+        }
+
+        [RelayCommand]
+        private void OpenUsersPage()
+        {
+            MainViewModelHandler.Instance.CurrentPage = new UsersPage();
+        }
+
+        [RelayCommand]
+        private void OpenEquipmentPage()
+        {
+            MainViewModelHandler.Instance.CurrentPage = new EquipmentPage();
+        }
+
+        [RelayCommand]
+        private void OpenReadingTypePage()
+        {
+            MainViewModelHandler.Instance.CurrentPage = new ReadingTypesPage();
+        }
+
+        [RelayCommand]
+        private void OpenJsonConfigPage()
+        {
+            MainViewModelHandler.Instance.CurrentPage = new JsonConfigPage();
         }
 
         [RelayCommand]

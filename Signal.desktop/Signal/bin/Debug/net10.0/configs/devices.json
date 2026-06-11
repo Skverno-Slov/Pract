@@ -1,0 +1,50 @@
+[
+  {
+    "Ip": "0.0.0.0",
+    "Login": "new_login",
+    "Password": "pwd",
+    "Params": [
+      {
+        "Command": "cmd?",
+        "Name": "new_param",
+        "Uncorrect": "9999",
+        "Annotations": null
+      },
+      {
+        "Command": "cmd?",
+        "Name": "new_param",
+        "Uncorrect": null,
+        "Annotations": {
+          "0": "Описание",
+          "1": "Описание2",
+          "2": "Описание3"
+        }
+      },
+      {
+        "Command": "cmd?",
+        "Name": "new_param",
+        "Uncorrect": null,
+        "Annotations": null
+      }
+    ]
+  },
+  {
+    "Ip": "0.0.0.0",
+    "Login": "new_login",
+    "Password": "pwd",
+    "Params": [
+      {
+        "Command": "cmd?",
+        "Name": "new_param",
+        "Uncorrect": "99.9",
+        "Annotations": null
+      },
+      {
+        "Command": "cmd?",
+        "Name": "new_param",
+        "Uncorrect": null,
+        "Annotations": null
+      }
+    ]
+  }
+]

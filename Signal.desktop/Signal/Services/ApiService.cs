@@ -1,4 +1,5 @@
-﻿using Signal.Dtos;
+﻿using Avalonia.Controls;
+using Signal.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -208,6 +209,82 @@ namespace Signal.Services
 
             client.BaseAddress = new Uri($"https://{address}:{port}/");
             client.Timeout = TimeSpan.FromSeconds(ClientTimeoutSeconds);
+        }
+
+        public async Task<EquipmentResponce?> GetEquipmentAsync(int page)
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<EquipmentResponce>($"api/equipment/admin-panel?page={page}");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> DeleteEquipmentAsync(int id)
+        {
+            try
+            {
+                var result = await client.DeleteAsync($"api/equipment/{id}");
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateEquipmentAsync(int id, EquipmentDto dto)
+        {
+            try
+            {
+                var result = await client.PutAsJsonAsync($"api/equipment/{id}", dto);
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<ReadingTypeResponce?> GetReadingTypesAsync(int page)
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<ReadingTypeResponce>($"api/equipment/reading-types?page={page}");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> DeleteReadingTypeAsync(int id)
+        {
+            try
+            {
+                var result = await client.DeleteAsync($"api/equipment/reading-types/{id}");
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateReadingTypeAsync(int id, ReadingTypeDto dto)
+        {
+            try
+            {
+                var result = await client.PutAsJsonAsync($"api/equipment/reading-types/{id}", dto);
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

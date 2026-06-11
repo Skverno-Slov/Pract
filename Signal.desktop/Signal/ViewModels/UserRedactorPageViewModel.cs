@@ -120,6 +120,8 @@ namespace Signal.ViewModels
                 };
                 await apiService.AddUserAsync(registerDto);
             }
+
+            Close();
         }
     }
 }
