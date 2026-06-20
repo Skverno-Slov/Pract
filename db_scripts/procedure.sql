@@ -1,3 +1,14 @@
+CREATE OR REPLACE FUNCTION get_equipment_logs(p_id INT) 
+-- возврат таблицы из id лога даты записи, значения, id статуса
+RETURNS TABLE ("reading_log_id" INT, "write_date_time" TIMESTAMPTZ, "value" VARCHAR(50), "status_id" INT) AS $$ 
+-- выборка id лога даты записи, значения, id статуса с id=p_id
+    SELECT "reading_log_id", "write_date_time", "value", "status_id" 
+    FROM "reading_log" 
+    WHERE "equipment_id" = p_id;
+$$ LANGUAGE sql;
+
+SELECT * FROM get_equipment_logs(8);
+
 CREATE OR REPLACE PROCEDURE create_new_user(
     p_login VARCHAR(20),
     p_hashed_password VARCHAR(255),

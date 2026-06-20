@@ -13,7 +13,7 @@
       {
         "Command": "<0000/EBN?",
         "Name": "ebn",
-        "Uncorrect": null,
+        "Uncorrect": "99.9",
         "Annotations": null
       },
       {
@@ -39,6 +39,17 @@
           "3": "OFF due to exi...",
           "4": "OFF due to BUC...",
           "5": "Carrier controlled..."
+        }
+      },
+      {
+        "Command": "<0000/TTC?",
+        "Name": "ttc",
+        "Uncorrect": null,
+        "Annotations": {
+          "0": "AMI",
+          "1": "B8ZC",
+          "2": "B6ZC",
+          "3": "HDB3"
         }
       }
     ]

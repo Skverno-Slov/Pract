@@ -33,8 +33,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
-    val savedAddress = sharedPrefs.getString("api_address", "192.168.59.18") ?: "192.168.59.18"
-    val savedPort = sharedPrefs.getString("api_port", "22") ?: "22"
+    val savedAddress = sharedPrefs.getString("api_address", "127.0.0.1") ?: "127.0.0.1"
+    val savedPort = sharedPrefs.getString("api_port", "5000") ?: "5000"
 
     val savedHttpsStatus = sharedPrefs.getString("api_protocol", "") ?: ""
 
@@ -181,7 +181,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 _uiState.update { it.copy(isLoading = false) }
             }
         }
-
     }
 
     fun loadDeviceData() {

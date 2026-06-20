@@ -3,7 +3,6 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Signal.Models;
-using Signal.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +18,7 @@ namespace Signal.ViewModels
     {
         readonly TopLevel? topLevel;
         readonly string localConfigPath = Path.Combine("configs", "devices.json");
-        readonly JsonSerializerOptions jsonOptions = new() 
+        readonly JsonSerializerOptions jsonOptions = new()
         {
             WriteIndented = true,
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -29,13 +28,13 @@ namespace Signal.ViewModels
         public ObservableCollection<DeviceConfig> Devices { get; set; } = new();
         public ObservableCollection<AnnotationItemViewModel> CurrentAnnotations { get; set; } = new();
 
-        [ObservableProperty] 
+        [ObservableProperty]
         DeviceConfig? selectedDevice;
-        [ObservableProperty] 
+        [ObservableProperty]
         ParamConfig? selectedParam;
-        [ObservableProperty] 
+        [ObservableProperty]
         AnnotationItemViewModel? selectedAnnotation;
-        [ObservableProperty] 
+        [ObservableProperty]
         string statusMessage = string.Empty;
 
         public JsonConfigPageViewModel(TopLevel? topLevel)
@@ -106,7 +105,7 @@ namespace Signal.ViewModels
         {
             try
             {
-                SyncAnnotationsToDictionary(); 
+                SyncAnnotationsToDictionary();
 
                 var dir = Path.GetDirectoryName(localConfigPath);
                 if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);

@@ -1,25 +1,3 @@
-INSERT INTO "reading_log" (
-    "equipment_id", 
-    "status_id", 
-    "reading_type_id", 
-    "write_date_time", 
-    "value"
-)
-SELECT 
-    1 AS "equipment_id",
-    floor(random() * 3 + 1)::int AS "status_id",
-    t.reading_type_id,
-    NOW() - interval '6 month' + (h.hour * INTERVAL '1 hour') AS "write_date_time",
-    round((random() * 100)::numeric, 2) AS "value"
-FROM 
-    generate_series(0, 4368) AS h(hour)
-CROSS JOIN 
-    generate_series(1, 5) AS t(reading_type_id)
-ORDER BY 
-    h.hour, t.reading_type_id;
-
-TRUNCATE TABLE "reading_log";
-
 SELECT equipment_id, serial_number, name, last_check_date
 FROM "equipment"
 WHERE "model" = 'МФ-2000' 

@@ -65,8 +65,6 @@ app.UseCors("AllowAndroidClient");
 app.UseAuthentication(); 
 app.UseAuthorization();  
 
-//app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();

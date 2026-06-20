@@ -13,7 +13,7 @@ namespace Signal.ViewModels
     {
         const int PageSize = 10;
 
-        private readonly ApiService userService = apiService;
+        private readonly ApiService apiService = apiService;
 
         public ObservableCollection<UserDto> Users { get; set; } = new();
 
@@ -27,15 +27,13 @@ namespace Signal.ViewModels
         [RelayCommand]
         public async Task LoadUsersAsync()
         {
-            var response = await userService.GetUsersAsync(CurrentPage);
+            var response = await apiService.GetUsersAsync(CurrentPage);
 
-            if (response != null)
+            if (response is not null)
             {
                 Users.Clear();
                 foreach (var user in response.Users)
-                {
                     Users.Add(user);
-                }
                 TotalUsers = response.TotalUsers;
                 TotalPages = (int)Math.Ceiling((double)TotalUsers / PageSize);
             }
@@ -70,7 +68,7 @@ namespace Signal.ViewModels
         async Task DeleteUserAsync(UserDto? user)
         {
             if (user is null) return;
-            var result = await userService.DeleteUserAsync(user.UserId);
+            var result = await apiService.DeleteUserAsync(user.UserId);
             if (result) await LoadUsersAsync();
         }
 

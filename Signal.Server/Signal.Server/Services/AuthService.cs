@@ -20,7 +20,7 @@ namespace Signal.Server.Services
         public bool VerifyPassword(string inputPassword, string hashedPassword)
             => BCrypt.Net.BCrypt.Verify(inputPassword, hashedPassword);
 
-        public string HashPassword(string password)
+        public string HashRawPassword(string password)
             => BCrypt.Net.BCrypt.HashPassword(password, AuthOptions.workFactor);
 
         public TokenResponse GenerateJwtTokens(int userId,
@@ -193,14 +193,14 @@ namespace Signal.Server.Services
 
         public async Task<bool> RegisterUserAsync(RegisterRequest dto)
         {
-            var hashedPwd = HashPassword(dto.HashedPassword);
+            var hashedPassword = HashRawPassword(dto.HashedPassword);
 
             try
             {
                 context.Users.Add(new User()
                 {
                     Login = dto.Login,
-                    HashedPassword = hashedPwd,
+                    HashedPassword = hashedPassword,
                     FirstName = dto.FirstName,
                     SecondName = dto.SecondName,
                     LastName = dto.LastName,
@@ -246,7 +246,7 @@ namespace Signal.Server.Services
 
         public async Task<bool> ResetPasswordAsync(int id, string newPassword)
         {
-            string hashedNewPassword = HashPassword(newPassword);
+            var hashedNewPassword = HashRawPassword(newPassword);
 
             var user = new User { UserId = id };
 

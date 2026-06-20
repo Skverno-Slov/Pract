@@ -1,3 +1,8 @@
+CREATE OR REPLACE VIEW view_new_equipment AS
+SELECT *
+FROM equipment
+WHERE name = 'New Equipment';
+
 CREATE OR REPLACE VIEW view_latest_equipment_readings AS 
 WITH ranked_readings AS ( 
     SELECT 

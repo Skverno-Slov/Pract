@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Signal.Server.Data.Dtos;
-using Signal.Server.Data.Models.Models;
+using Signal.Server.Data.Models;
 using Signal.Server.Services;
 
 namespace Signal.Test
@@ -82,7 +82,7 @@ namespace Signal.Test
         {
             string rawPassword = "123123123";
 
-            string hashedPassword = authService.HashPassword(rawPassword);
+            string hashedPassword = authService.HashRawPassword(rawPassword);
             bool isVerified = authService.VerifyPassword(rawPassword, hashedPassword);
 
             hashedPassword.Should().NotBe(rawPassword);
